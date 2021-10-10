@@ -13,7 +13,7 @@ namespace StudentManager
             public string Module_Code { get; set; }
             public string Module_Name { get; set; }
             public string Module_Description { get; set; }
-            public List<string> Online_resources { get; set; }
+            public List<string> Online_Resources { get; set; }
         }
 
         public class Student

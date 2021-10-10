@@ -38,7 +38,7 @@ namespace StudentManager
                     new Module(){ Module_Code = "pr123gasd", Module_Name = "123asf", Module_Description = "hefd2345h" },
                     new Module(){ Module_Code = "prga123213sd", Module_Name = "as456f", Module_Description = "hef2345dh" },
                     new Module(){ Module_Code = "prg321asd", Module_Name = "asf6345", Module_Description = "hefd2345h", 
-                        Online_resources = new List<string>
+                        Online_Resources = new List<string>
                         {
                             "https://Place1.com",
                             "https://Place2.com",
@@ -67,7 +67,7 @@ namespace StudentManager
             textBox1.Text = module.Module_Name;
             richTextBox1.Text = module.Module_Description;
             dataGridViewOnlineResources.DataSource = 
-                module.Online_resources?.ConvertAll<ModuleResource>(resource => new ModuleResource() { OnlineResource = resource });
+                module.Online_Resources?.ConvertAll<ModuleResource>(resource => new ModuleResource() { OnlineResource = resource });
             dataGridViewOnlineResources.Refresh();
             button2.Enabled = module != null;
         }
