@@ -277,28 +277,25 @@ namespace StudentManager
             public bool SetModule(Module module)
             {
                 var existingModules = GetModules($"{nameof(Module.Module_Code)} = {ToSQLString(module.Module_Code)}");
-                switch (existingModules.Count)
-                {
-                case 0:
-                        return SetModuleFromQuery(
-                            $"INSERT INTO Module ({GetModuleAttributesString()}) VALUES (" +
-                            $"{ToSQLString(module.Module_Code)}," +
-                            $"{ToSQLString(module.Module_Name)}," +
-                            $"{ToSQLString(module.Module_Description)}" +
-                            $")",
-                            module
-                            );
-                case 1:
-                        return SetModuleFromQuery(
-                            $"UPDATE Module SET " +
-                            $"{nameof(Module.Module_Name       )} = {ToSQLString(module.Module_Name)}," +
-                            $"{nameof(Module.Module_Description)} = {ToSQLString(module.Module_Description)} " +
-                            $"WHERE {nameof(Module.Module_Code)} = {ToSQLString(module.Module_Code)}",
-                            module
-                            );
-                default: 
-                        throw new Exception("Database had duplicate primary keys in table Module");
-                }
+                if (existingModules == null || existingModules.Count == 0)
+                    return SetModuleFromQuery(
+                        $"INSERT INTO Module ({GetModuleAttributesString()}) VALUES (" +
+                        $"{ToSQLString(module.Module_Code)}," +
+                        $"{ToSQLString(module.Module_Name)}," +
+                        $"{ToSQLString(module.Module_Description)}" +
+                        $")",
+                        module
+                        );
+                else if (existingModules.Count == 1)
+                    return SetModuleFromQuery(
+                        $"UPDATE Module SET " +
+                        $"{nameof(Module.Module_Name)} = {ToSQLString(module.Module_Name)}," +
+                        $"{nameof(Module.Module_Description)} = {ToSQLString(module.Module_Description)} " +
+                        $"WHERE {nameof(Module.Module_Code)} = {ToSQLString(module.Module_Code)}",
+                        module
+                        );
+                else
+                    throw new Exception("Database had duplicate primary keys in table Module");
             }
 
             public bool RemoveModule(Module module)
@@ -326,7 +323,8 @@ namespace StudentManager
                     }
                     return false;
                 }
-            }
+            } 
+
 
 
             private bool SetStudentFromQuery(string query, Student setModules = null)
@@ -336,10 +334,10 @@ namespace StudentManager
                 {
                     transaction = connection.BeginTransaction("SetStudent");
                     int rowsAffected = new SqlCommand(query, connection).ExecuteNonQuery();
-                    if (rowsAffected != 1) throw new IndexOutOfRangeException($"{rowsAffected} rows affected in SetModule operation");
+                    if (rowsAffected != 1) throw new IndexOutOfRangeException($"{rowsAffected} rows affected in SetStudent operation");
                     if (setModules == null || SetStudentModules(setModules))
                         return true;
-                    else throw new Exception("Failed to set Online Resources");
+                    else throw new Exception("Failed to set Student's Modules");
                 }
                 catch (Exception exception)
                 {
@@ -387,34 +385,31 @@ namespace StudentManager
             public bool SetStudent(Student student)
             {
                 var existingModules = GetStudents($"{nameof(Student.Student_Number)} = {ToSQLString(student.Student_Number)}");
-                switch (existingModules.Count)
-                {
-                    case 0:
-                        return SetStudentFromQuery(
-                            $"INSERT INTO Student ({GetStudentAttributesString()}) VALUES (" +
-                            $"{ToSQLString(student.Student_Number)}," +
-                            $"{ToSQLString(student.Student_Name_and_Surname)}," +
-                            $"{ToSQLString(student.DOB.ToString("yyyy-MM-dd"))}," +
-                            $"{ToSQLString(student.Gender)}," +
-                            $"{ToSQLString(student.Phone)}," +
-                            $"{ToSQLString(student.Address)} " +
-                            $")",
-                            student
-                            );
-                    case 1:
-                        return SetStudentFromQuery(
-                            $"UPDATE Student SET " +
-                            $"{nameof(Student.Student_Name_and_Surname)} = {ToSQLString(student.Student_Name_and_Surname)}," +
-                            $"{nameof(Student.DOB)} = {ToSQLString(student.DOB.ToString("yyyy-MM-dd"))}," +
-                            $"{nameof(Student.Gender)} = {ToSQLString(student.Gender)}," +
-                            $"{nameof(Student.Phone)} = {ToSQLString(student.Phone)}," +
-                            $"{nameof(Student.Address)} = {ToSQLString(student.Address)} " +
-                            $"WHERE {nameof(Student.Student_Number)} = {ToSQLString(student.Student_Number)}",
-                            student
-                            );
-                    default:
-                        throw new Exception("Database had duplicate primary keys in table Student");
-                }
+                if (existingModules == null || existingModules.Count == 0)
+                    return SetStudentFromQuery(
+                        $"INSERT INTO Student ({GetStudentAttributesString()}) VALUES (" +
+                        $"{ToSQLString(student.Student_Number)}," +
+                        $"{ToSQLString(student.Student_Name_and_Surname)}," +
+                        $"{ToSQLString(student.DOB.ToString("yyyy-MM-dd"))}," +
+                        $"{ToSQLString(student.Gender)}," +
+                        $"{ToSQLString(student.Phone)}," +
+                        $"{ToSQLString(student.Address)} " +
+                        $")",
+                        student
+                        );
+                else if (existingModules.Count == 1)
+                    return SetStudentFromQuery(
+                        $"UPDATE Student SET " +
+                        $"{nameof(Student.Student_Name_and_Surname)} = {ToSQLString(student.Student_Name_and_Surname)}," +
+                        $"{nameof(Student.DOB)} = {ToSQLString(student.DOB.ToString("yyyy-MM-dd"))}," +
+                        $"{nameof(Student.Gender)} = {ToSQLString(student.Gender)}," +
+                        $"{nameof(Student.Phone)} = {ToSQLString(student.Phone)}," +
+                        $"{nameof(Student.Address)} = {ToSQLString(student.Address)} " +
+                        $"WHERE {nameof(Student.Student_Number)} = {ToSQLString(student.Student_Number)}",
+                        student
+                        );
+                else 
+                    throw new IndexOutOfRangeException("duplicate Student_Numbers returned by database");
             }
 
             public bool RemoveStudent(Student student)
