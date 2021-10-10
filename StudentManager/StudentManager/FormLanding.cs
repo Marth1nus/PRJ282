@@ -16,8 +16,8 @@ namespace StudentManager
     {
         public FormLanding()
         {
-            InitializeComponent();
             ProgramInfo.nextForm = ProgramInfo.Form.Exit;
+            InitializeComponent();
         }
 
         private void HintUsers()
@@ -38,15 +38,19 @@ namespace StudentManager
                 button1.Text = "Log Out";
                 button2.Enabled = button3.Enabled = true;
             }
+            else
+            {
 #if DEBUG && true
 #warning auto login still active
-            Console.WriteLine("AUTO LOGIN ERROR!!!!");
+            Console.WriteLine("TEST AUTO LOGIN ENABLED!!!!");
             comboBox1.Text = "TESTUSER";
             textBox1.Text = "TESTUSER";
             Button1_Click(null, null);
             if (button3.Enabled) 
                 Button3_Click(null, null);
 #endif
+            }
+
         }
 
         private void Button1_Click(object sender, EventArgs e)

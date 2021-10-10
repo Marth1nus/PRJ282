@@ -243,12 +243,28 @@ namespace StudentManager
             public UserAccessException(string message) : base(message) { }
         }
 
+        private static bool SafeStringCompare(string left, string right)
+        {
+            /* Constant time interval, branchless string comparison
+             * Safe against most timing attacks for sets of 0x100 characters
+            */
+            bool result = true; 
+            int length = Math.Max(left.Length, right.Length) / 0x100 * 0x100 + 0x100;
+            for (int i = 0; i < length; ++i)
+            {
+                char l = i < left.Length ? left[i] : '\0';
+                char r = i < right.Length ? right[i] : '\0';
+                result = result && (l == r);
+            }
+            return result;
+        }
+
         public static LoginToken GetLoginToken(string username, string password)
         {
             string scrambledPassword = ScramblePassword(password);
             foreach (var fileToken in GetFileData())
                 if (username == fileToken.username)
-                    if (scrambledPassword == fileToken.scrambledPassword)
+                    if (SafeStringCompare(scrambledPassword, fileToken.scrambledPassword))
                         return new LoginToken(username);
                     else return null;
             throw new UserAccessException($"\"{username}\" is not a registered user");
