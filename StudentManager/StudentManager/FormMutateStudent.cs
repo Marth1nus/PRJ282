@@ -13,9 +13,16 @@ namespace StudentManager
 {
     public partial class FormMutateStudent : Form
     {
-        public FormMutateStudent(Data.Student student)
+        public FormMutateStudent()
         {
+            ProgramInfo.nextForm = ProgramInfo.Form.View;
+            if (ProgramInfo.loginToken == null) throw new NullReferenceException();
             InitializeComponent();
+        }
+
+        private void FormMutateStudent_Load(object sender, EventArgs e)
+        {
+
         }
     }
 }

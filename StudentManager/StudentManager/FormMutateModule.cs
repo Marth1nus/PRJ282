@@ -13,9 +13,16 @@ namespace StudentManager
 {
     public partial class FormMutateModule : Form
     {
-        public FormMutateModule(Data.Module module)
+        public FormMutateModule()
         {
+            ProgramInfo.nextForm = ProgramInfo.Form.View;
+            if (ProgramInfo.loginToken == null) throw new NullReferenceException();
             InitializeComponent();
+        }
+
+        private void FormMutateModule_Load(object sender, EventArgs e)
+        {
+
         }
     }
 }

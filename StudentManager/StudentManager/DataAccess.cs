@@ -12,11 +12,11 @@ namespace StudentManager
 {
     public static class DataAccess
     {
-        private static string DatabaseConnectionString = "Data Source=(local); Initial Catalog = BCStudents;";
+        private static readonly string DatabaseConnectionString = "Data Source=(local); Initial Catalog = BCStudents;";
 
         public class DatabaseConnection
         {
-            private SqlConnection connection = new SqlConnection(DatabaseConnectionString);
+            private readonly SqlConnection connection = new SqlConnection(DatabaseConnectionString);
             public DatabaseConnection() 
             {
                 try { connection.Open(); }
@@ -24,85 +24,82 @@ namespace StudentManager
             }
             ~DatabaseConnection() { connection.Close(); }
 
-            public StudentModuleDataView GetStudentModuleDataView()
+            public StudentAndModuleData GetStudentModuleDataView()
             {
                 var modules = GetModules();
                 var students = GetStudents();
-                return new StudentModuleDataView() { modules = modules, students = students };
+                if (students != null && modules != null)
+                {   // scrap copies
+                    List<string> Module_Codes = modules.ConvertAll<string>(module => module.Module_Code);
+                    foreach (var student in students)
+                        student.Modules = modules.FindAll(module => Module_Codes.Contains(module.Module_Code));
+                }
+                return new StudentAndModuleData() { modules = modules, students = students };
             }
 
-            private List<Module> GetModulesFromReader(SqlDataReader reader)
+            private string GetModuleSELECT(string tableSource = null)
             {
-                List<Module> modules = new List<Module>();
-                while (reader.Read())
+                var S = tableSource == null ? "" : (tableSource + ".");
+                return 
+                    $"{S}{nameof(Module.Module_Code)}," +
+                    $"{S}{nameof(Module.Module_Name)}," +
+                    $"{S}{nameof(Module.Module_Description)}";
+            }
+
+            private List<Module> GetModulesFromQuery(string query)
+            {
+                try
                 {
-                    Module newModule = new Module()
+                    List<Module> modules = new List<Module>();
+                    SqlDataReader reader = new SqlCommand(query, connection).ExecuteReader();
+                    while (reader.Read())
                     {
-                        Module_Code = $"{reader["Module_Code"]}",
-                        Module_Name = $"{reader["Module_Name"]}",
-                        Module_Description = $"{reader["Module_Description"]}",
-                        Online_resources = new List<string>()
-                    };
+                        Module newModule = new Module()
+                        {
+                            Module_Code = $"{reader[nameof(Module.Module_Code)]}",
+                            Module_Name = $"{reader[nameof(Module.Module_Name)]}",
+                            Module_Description = $"{reader[nameof(Module.Module_Description)]}",
+                            Online_resources = new List<string>()
+                        };
 
-                    SqlCommand ModuleResourcesCommand = new SqlCommand(
-                        $"SELECT ResourceURL FROM Module_Online_resource WHERE Module_Code = {newModule.Module_Code}",
-                        connection);
-                    SqlDataReader ModuleResourcesReader = ModuleResourcesCommand.ExecuteReader();
-                    while (ModuleResourcesReader.Read())
-                        newModule.Online_resources.Add($"{ModuleResourcesReader["ResourceURL"]}");
+                        SqlCommand ModuleResourcesCommand = new SqlCommand(
+                            $"SELECT ResourceURL FROM ModuleOnlineResource WHERE Module_Code = {newModule.Module_Code}",
+                            connection);
+                        SqlDataReader ModuleResourcesReader = ModuleResourcesCommand.ExecuteReader();
+                        while (ModuleResourcesReader.Read())
+                            newModule.Online_resources.Add($"{ModuleResourcesReader["ResourceURL"]}");
 
-                    modules.Add(newModule);
+                        modules.Add(newModule);
+                    }
+                    return modules;
                 }
-                return modules;
+                catch (Exception exception)
+                {
+                    Console.WriteLine(exception.Message);
+                    return null;
+                }
             }
 
             public List<Module> GetModules(string whereParam = "TRUE")
             {
-                try
-                {
-                    SqlCommand command = new SqlCommand(
-                        "SELECT " +
-                        "Module_Code," +
-                        "Module_Name," +
-                        "Module_Description " +
-                        $"FROM Module WHERE {whereParam}",
-                        connection);
-                    return GetModulesFromReader(command.ExecuteReader());
-                }
-                catch (Exception exception)
-                {
-                    Console.WriteLine(exception.Message);
-                    return null;
-                }
+                return GetModulesFromQuery($"SELECT {GetModuleSELECT()} FROM Module WHERE {whereParam}");
             }
 
             private List<Module> GetModulesWithStudents(string whereParam)
             {
-                try
-                {
-                    SqlCommand command = new SqlCommand(
-                            "SELECT " +
-                            "M.Module_Code," +
-                            "M.Module_Name," +
-                            "M.Module_Description " +
-                            "FROM Module M JOIN StudentModule SM " +
-                            "ON M.Moldule_Code = SM.Module_Code " +
-                            $"WHERE {whereParam}",
-                        connection);
-                    return GetModulesFromReader(command.ExecuteReader());
-                }
-                catch (Exception exception)
-                {
-                    Console.WriteLine(exception.Message);
-                    return null;
-                }
+                return GetModulesFromQuery(
+                    $"SELECT {GetModuleSELECT("M")},SM.{nameof(Student.Student_Number)} " +
+                    $"FROM Module M JOIN StudentModule SM " +
+                    $"ON M.Moldule_Code = SM.Module_Code " +
+                    $"WHERE {whereParam}"
+                );
             }
 
-            public List<Module> GetModulesWithStudents(List<string> studentsNumbers)
+            private List<Module> GetModulesWithStudents(List<string> studentsNumbers)
             {
                 string whereParam = "";
                 foreach (var studentNumber in studentsNumbers)
-                    whereParam += $"Student_Number = {studentNumber} or ";
+                    whereParam += $"SM.{nameof(Student.Student_Number)} = {studentNumber} or ";
                 whereParam.Remove(whereParam.Length - " or ".Length, " or ".Length);
                 return GetModulesWithStudents(whereParam);
             }
@@ -119,91 +116,70 @@ namespace StudentManager
 
 
 
-            private List<Student> GetStudentsFromReader(SqlDataReader reader)
+            private string GetStudentSELECT(string tableSource = null)
             {
-                List<Student> students = new List<Student>();
-                while (reader.Read())
+                var S = tableSource == null ? "" : (tableSource + ".");
+                return 
+                    $"{S}{nameof(Student.Student_Number          )}," +
+                    $"{S}{nameof(Student.Student_Name_and_Surname)}," +
+                    $"{S}{nameof(Student.Student_Image           )}," +
+                    $"{S}{nameof(Student.DOB                     )}," +
+                    $"{S}{nameof(Student.Gender                  )}," +
+                    $"{S}{nameof(Student.Phone                   )}," +
+                    $"{S}{nameof(Student.Address                 )} ";
+            }
+
+            private List<Student> GetStudentsFromQuery(string query)
+            {
+                try
                 {
-                    Student newStudent = new Student()
+                    SqlDataReader reader = new SqlCommand(query, connection).ExecuteReader();
+                    List<Student> students = new List<Student>();
+                    while (reader.Read())
                     {
-                        Student_Number           = $"{reader["Student_Number"]}",
-                        Student_Name_and_Surname = $"{reader["Student_Name_and_Surname"]}",
-                        Student_Image            = $"{reader["Student_Image"]}",
-                        DOB                      = Convert.ToDateTime(reader["DOB"]),
-                        Gender                   = $"{reader["Gender"]}",
-                        Phone                    = $"{reader["Phone"]}",
-                        Address                  = $"{reader["Address"]}",
-                        Module_Codes             = new List<string>()
-                    };
-
-                    SqlCommand getModuleCodesCommand = new SqlCommand(
-                        $"SELECT Module_Code FROM StudentModule WHERE Student_Number = {newStudent.Student_Number}",
-                        connection);
-                    SqlDataReader moduleCodesReader = getModuleCodesCommand.ExecuteReader();
-                    while (moduleCodesReader.Read())
-                        newStudent.Module_Codes.Add($"{moduleCodesReader["Module_Code"]}");
-
-                    students.Add(newStudent);
+                        Student newStudent = new Student()
+                        {
+                            Student_Number = $"{reader[nameof(Student.Student_Number)]}",
+                            Student_Name_and_Surname = $"{reader[nameof(Student.Student_Name_and_Surname)]}",
+                            Student_Image = $"{reader[nameof(Student.Student_Image)]}",
+                            DOB = Convert.ToDateTime(reader[nameof(Student.DOB)]),
+                            Gender = $"{reader[nameof(Student.Gender)]}",
+                            Phone = $"{reader[nameof(Student.Phone)]}",
+                            Address = $"{reader[nameof(Student.Address)]}",
+                            Modules = new List<Module>()
+                        };
+                        newStudent.Modules = GetModulesWithStudent(newStudent);
+                        students.Add(newStudent);
+                    }
+                    return students;
                 }
-                return students;
+                catch (Exception exception)
+                {
+                    Console.WriteLine(exception.Message);
+                    return null;
+                }
             }
             
             public List<Student> GetStudents(string whereParam = "TRUE")
             {
-                try
-                {
-                    SqlCommand command = new SqlCommand(
-                        "SELECT " +
-                        "Student_Number," +
-                        "Student_Name_and_Surname," +
-                        "Student_Image," +
-                        "DOB," +
-                        "Gender," +
-                        "Phone," +
-                        "Address " +
-                        $"FROM Student WHERE {whereParam}",
-                        connection);
-                    return GetStudentsFromReader(command.ExecuteReader());
-                }
-                catch (Exception exception)
-                {
-                    Console.WriteLine(exception.Message);
-                    return null;
-                }
+                return GetStudentsFromQuery($"SELECT {GetStudentSELECT()} FROM Student WHERE {whereParam}");
             }
 
             private List<Student> GetStudentsWithModules(string whereParam)
             {
-                try
-                {
-                    SqlCommand command = new SqlCommand(
-                            "SELECT " +
-                            "S.Student_Number," +
-                            "S.Student_Name_and_Surname," +
-                            "S.Student_Image," +
-                            "S.DOB," +
-                            "S.Gender," +
-                            "S.Phone," +
-                            "S.Address," +
-                            "SM.Module_Code " +
-                            "FROM Student S JOIN StudentModule SM " +
-                            "ON S.Student_Number = SM.Student_Number " +
-                            $"WHERE {whereParam}",
-                        connection);
-                    return GetStudentsFromReader(command.ExecuteReader());
-                }
-                catch (Exception exception)
-                {
-                    Console.WriteLine(exception.Message);
-                    return null;
-                }
+                return GetStudentsFromQuery(
+                        $"SELECT {GetStudentSELECT("S")}, SM.{nameof(Module.Module_Code)} " +
+                        "FROM Student S JOIN StudentModule SM " +
+                        "ON S.Student_Number = SM.Student_Number " +
+                        $"WHERE {whereParam}"
+                        );
             }
 
             public List<Student> GetStudentsWithModules(List<string> moduleCodes)
             {
                 string whereParam = "";
                 foreach (var moduleCode in moduleCodes)
-                    whereParam += $"Student_Number = {moduleCode} or ";
+                    whereParam += $"SM.{nameof(Module.Module_Code)} = {moduleCode} or ";
                 whereParam.Remove(whereParam.Length - " or ".Length, " or ".Length);
                 return GetStudentsWithModules(whereParam);
             }
@@ -220,25 +196,35 @@ namespace StudentManager
         }
 
 
+        /*
+        File Handler functions
+        */
+
 
         const string DataFilePath = "DataFile.TotallyNotAPlainTextFile";
 
         private static string ScramblePassword(string plainTextPassword)
         {
-            /*  Here is where something like salt and pepper 
-             *  scrambles can be implimented to protect user data.
-             *  As I am one person I will not be implimenting anything
-             *  like that without libraries for this project
-             */
             Random random = new Random(0xabcdef);
-            char[] charArray = plainTextPassword.ToCharArray();
-            for (int i = 0; i < charArray.Length; ++i)
-                charArray[i] += (char)random.Next(16);
-            return $"{charArray}";
+
+            int lengthMulpipal = 0x20;
+            int length = plainTextPassword.Length / lengthMulpipal * lengthMulpipal + lengthMulpipal;
+            StringBuilder builder = new StringBuilder(length);
+
+            // copy and scrable plaintextPassword
+            for (int i = 0; i < plainTextPassword.Length; ++i) 
+                builder.Append(plainTextPassword[i] + (char)random.Next(0xf));
+
+            // padd to constant length to protect against timing attacks and password leaks
+            for (int i = plainTextPassword.Length; i < length; ++i) 
+                builder.Append((char)random.Next('0', 'z') + (char)random.Next(0xf));
+
+            return builder.ToString();
         }
 
-        private static IEnumerable<(string username, string scrambledPassword)> GetFileData()
+        public static IEnumerable<(string username, string scrambledPassword)> GetFileData()
         {
+            if (!File.Exists(DataFilePath)) yield break;
             using (StreamReader reader = File.OpenText(DataFilePath))
             {
                 for (string line = ""; line != null; line = reader.ReadLine())
@@ -252,6 +238,11 @@ namespace StudentManager
             }
         }
 
+        public class UserAccessException : Exception
+        {
+            public UserAccessException(string message) : base(message) { }
+        }
+
         public static LoginToken GetLoginToken(string username, string password)
         {
             string scrambledPassword = ScramblePassword(password);
@@ -259,27 +250,32 @@ namespace StudentManager
                 if (username == fileToken.username)
                     if (scrambledPassword == fileToken.scrambledPassword)
                         return new LoginToken(username);
-                    else break;
-            return null;
+                    else return null;
+            throw new UserAccessException($"\"{username}\" is not a registered user");
         }
 
         public static LoginToken AddLoginToken(string username, string password)
         {
-            LoginToken existingToken = GetLoginToken(username, password);
-            if (existingToken != null) return existingToken;
-
-            using (StreamWriter writer = File.AppendText(DataFilePath))
+            try
             {
-                // TO DO : filer whitespaces from username and password
-                writer.WriteLine($"{username},{ScramblePassword(password)}");
-                writer.Flush();
-                writer.Close();
+                // verify existing token does not exist
+                return GetLoginToken(username, password);
             }
+            catch (UserAccessException)
+            {
+                using (StreamWriter writer = File.AppendText(DataFilePath))
+                {
+                    // TO DO : filer whitespaces from username and password
+                    writer.WriteLine($"{username},{ScramblePassword(password)}");
+                    writer.Flush();
+                    writer.Close();
+                }
 
-            bool debugCheck = true; // validate file contents
-            if (debugCheck) return GetLoginToken(username, password);
+                bool debugCheck = true; // validate file contents
+                if (debugCheck) return GetLoginToken(username, password);
 
-            return new LoginToken(username);
+                return new LoginToken(username);
+            }
         }
     }
 }

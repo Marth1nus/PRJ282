@@ -10,39 +10,45 @@ namespace StudentManager
     {
         public class Module
         {
-            public string Module_Code;
-            public string Module_Name;
-            public string Module_Description;
-            public List<string> Online_resources;
+            public string Module_Code { get; set; }
+            public string Module_Name { get; set; }
+            public string Module_Description { get; set; }
+            public List<string> Online_resources { get; set; }
         }
 
         public class Student
         {
-            public string Student_Number;
-            public string Student_Name_and_Surname;
-            public string Student_Image;
-            public DateTime DOB;
-            public string Gender;
-            public string Phone;
-            public string Address;
-            public List<string> Module_Codes;
+            public string Student_Number { get; set; }
+            public string Student_Name_and_Surname { get; set; }
+            public string Student_Image { get; set; }
+            public DateTime DOB { get; set; }
+            public string Gender { get; set; }
+            public string Phone { get; set; }
+            public string Address { get; set; }
+            public List<Module> Modules { get; set; }
         }
 
-        public class StudentModuleDataView
+        public class StudentAndModuleData
         {
             public List<Module> modules;
             public List<Student> students;
-
-            public List<Module> GetStudentModules(Student student)
-            {
-                return modules.FindAll(module => student.Module_Codes.Contains(module.Module_Code));
-            }
         }
 
         public class LoginToken
         {
             readonly public string username;
             public LoginToken(string username) { this.username = username; }
+        }
+
+        public static class ProgramInfo
+        {
+            public enum Form { MutateStudent, MutateModule, View, Landing, Exit }
+            public static Form nextForm = Form.Landing;
+
+            public static LoginToken loginToken = null;
+            public static StudentAndModuleData studentAndModuleData = null;
+            public static Student selectedStudent = null;
+            public static Module selectedModule = null;
         }
     }
 }
