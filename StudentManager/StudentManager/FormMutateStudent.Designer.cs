@@ -31,9 +31,8 @@ namespace StudentManager
         {
             this.groupBox1 = new System.Windows.Forms.GroupBox();
             this.panel1 = new System.Windows.Forms.Panel();
-            this.label7 = new System.Windows.Forms.Label();
-            this.comboBox1 = new System.Windows.Forms.ComboBox();
             this.richTextBox1 = new System.Windows.Forms.RichTextBox();
+            this.button1 = new System.Windows.Forms.Button();
             this.button2 = new System.Windows.Forms.Button();
             this.label1 = new System.Windows.Forms.Label();
             this.textBoxStudentNumber = new System.Windows.Forms.TextBox();
@@ -69,9 +68,8 @@ namespace StudentManager
             // 
             // panel1
             // 
-            this.panel1.Controls.Add(this.label7);
-            this.panel1.Controls.Add(this.comboBox1);
             this.panel1.Controls.Add(this.richTextBox1);
+            this.panel1.Controls.Add(this.button1);
             this.panel1.Controls.Add(this.button2);
             this.panel1.Controls.Add(this.label1);
             this.panel1.Controls.Add(this.textBoxStudentNumber);
@@ -88,43 +86,38 @@ namespace StudentManager
             this.panel1.Dock = System.Windows.Forms.DockStyle.Top;
             this.panel1.Location = new System.Drawing.Point(3, 16);
             this.panel1.Name = "panel1";
-            this.panel1.Size = new System.Drawing.Size(794, 214);
+            this.panel1.Size = new System.Drawing.Size(794, 186);
             this.panel1.TabIndex = 4;
-            // 
-            // label7
-            // 
-            this.label7.AutoSize = true;
-            this.label7.Location = new System.Drawing.Point(6, 191);
-            this.label7.Name = "label7";
-            this.label7.Size = new System.Drawing.Size(86, 13);
-            this.label7.TabIndex = 6;
-            this.label7.Text = "Submition Action";
-            // 
-            // comboBox1
-            // 
-            this.comboBox1.FormattingEnabled = true;
-            this.comboBox1.Location = new System.Drawing.Point(94, 188);
-            this.comboBox1.Name = "comboBox1";
-            this.comboBox1.Size = new System.Drawing.Size(100, 21);
-            this.comboBox1.TabIndex = 5;
             // 
             // richTextBox1
             // 
             this.richTextBox1.Dock = System.Windows.Forms.DockStyle.Right;
             this.richTextBox1.Location = new System.Drawing.Point(200, 0);
             this.richTextBox1.Name = "richTextBox1";
-            this.richTextBox1.Size = new System.Drawing.Size(594, 214);
+            this.richTextBox1.ReadOnly = true;
+            this.richTextBox1.Size = new System.Drawing.Size(594, 186);
             this.richTextBox1.TabIndex = 4;
             this.richTextBox1.Text = "";
+            // 
+            // button1
+            // 
+            this.button1.Location = new System.Drawing.Point(117, 159);
+            this.button1.Name = "button1";
+            this.button1.Size = new System.Drawing.Size(77, 23);
+            this.button1.TabIndex = 3;
+            this.button1.Text = "Delete";
+            this.button1.UseVisualStyleBackColor = true;
+            this.button1.Click += new System.EventHandler(this.button1_Click);
             // 
             // button2
             // 
             this.button2.Location = new System.Drawing.Point(9, 159);
             this.button2.Name = "button2";
-            this.button2.Size = new System.Drawing.Size(185, 23);
+            this.button2.Size = new System.Drawing.Size(102, 23);
             this.button2.TabIndex = 3;
-            this.button2.Text = "Submit";
+            this.button2.Text = "Edit";
             this.button2.UseVisualStyleBackColor = true;
+            this.button2.Click += new System.EventHandler(this.button2_Click);
             // 
             // label1
             // 
@@ -137,7 +130,6 @@ namespace StudentManager
             // 
             // textBoxStudentNumber
             // 
-            this.textBoxStudentNumber.Enabled = false;
             this.textBoxStudentNumber.Location = new System.Drawing.Point(94, 3);
             this.textBoxStudentNumber.Name = "textBoxStudentNumber";
             this.textBoxStudentNumber.Size = new System.Drawing.Size(100, 20);
@@ -145,7 +137,6 @@ namespace StudentManager
             // 
             // textBoxStudentAddress
             // 
-            this.textBoxStudentAddress.Enabled = false;
             this.textBoxStudentAddress.Location = new System.Drawing.Point(94, 133);
             this.textBoxStudentAddress.Name = "textBoxStudentAddress";
             this.textBoxStudentAddress.Size = new System.Drawing.Size(100, 20);
@@ -171,7 +162,6 @@ namespace StudentManager
             // 
             // textBoxStudentName
             // 
-            this.textBoxStudentName.Enabled = false;
             this.textBoxStudentName.Location = new System.Drawing.Point(94, 29);
             this.textBoxStudentName.Name = "textBoxStudentName";
             this.textBoxStudentName.Size = new System.Drawing.Size(100, 20);
@@ -179,7 +169,6 @@ namespace StudentManager
             // 
             // textBoxStudentPhone
             // 
-            this.textBoxStudentPhone.Enabled = false;
             this.textBoxStudentPhone.Location = new System.Drawing.Point(94, 107);
             this.textBoxStudentPhone.Name = "textBoxStudentPhone";
             this.textBoxStudentPhone.Size = new System.Drawing.Size(100, 20);
@@ -205,7 +194,6 @@ namespace StudentManager
             // 
             // textBoxStudentBirthdate
             // 
-            this.textBoxStudentBirthdate.Enabled = false;
             this.textBoxStudentBirthdate.Location = new System.Drawing.Point(94, 55);
             this.textBoxStudentBirthdate.Name = "textBoxStudentBirthdate";
             this.textBoxStudentBirthdate.Size = new System.Drawing.Size(100, 20);
@@ -213,7 +201,6 @@ namespace StudentManager
             // 
             // textBoxStudentGender
             // 
-            this.textBoxStudentGender.Enabled = false;
             this.textBoxStudentGender.Location = new System.Drawing.Point(94, 81);
             this.textBoxStudentGender.Name = "textBoxStudentGender";
             this.textBoxStudentGender.Size = new System.Drawing.Size(100, 20);
@@ -232,9 +219,9 @@ namespace StudentManager
             // 
             this.groupBox2.Controls.Add(this.dataGridViewModuleCodes);
             this.groupBox2.Dock = System.Windows.Forms.DockStyle.Bottom;
-            this.groupBox2.Location = new System.Drawing.Point(3, 231);
+            this.groupBox2.Location = new System.Drawing.Point(3, 204);
             this.groupBox2.Name = "groupBox2";
-            this.groupBox2.Size = new System.Drawing.Size(794, 216);
+            this.groupBox2.Size = new System.Drawing.Size(794, 243);
             this.groupBox2.TabIndex = 0;
             this.groupBox2.TabStop = false;
             this.groupBox2.Text = "Module Codes";
@@ -247,7 +234,7 @@ namespace StudentManager
             this.dataGridViewModuleCodes.Dock = System.Windows.Forms.DockStyle.Fill;
             this.dataGridViewModuleCodes.Location = new System.Drawing.Point(3, 16);
             this.dataGridViewModuleCodes.Name = "dataGridViewModuleCodes";
-            this.dataGridViewModuleCodes.Size = new System.Drawing.Size(788, 197);
+            this.dataGridViewModuleCodes.Size = new System.Drawing.Size(788, 224);
             this.dataGridViewModuleCodes.TabIndex = 0;
             // 
             // FormMutateStudent
@@ -288,7 +275,6 @@ namespace StudentManager
         private System.Windows.Forms.Panel panel1;
         private System.Windows.Forms.Button button2;
         private System.Windows.Forms.RichTextBox richTextBox1;
-        private System.Windows.Forms.Label label7;
-        private System.Windows.Forms.ComboBox comboBox1;
+        private System.Windows.Forms.Button button1;
     }
 }

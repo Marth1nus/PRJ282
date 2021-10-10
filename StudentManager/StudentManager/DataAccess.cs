@@ -19,7 +19,7 @@ namespace StudentManager
             private static string ToSQLString(string cString)
             {
                 /* replace: \ => \\, (newline) => \n, " => \" */
-                return $"\"{cString.Replace("\\", "\\\\").Replace("\n", "\\n").Replace("\"", "\\\"")}\"";
+                return $"\'{cString.Replace("\\", "\\\\").Replace("\n", "\\n").Replace("\"", "\\\"")}\'";
             }
 
             private readonly SqlConnection connection = new SqlConnection(DatabaseConnectionString);
@@ -251,7 +251,6 @@ namespace StudentManager
                     int rowsAffected = new SqlCommand(
                         $"DELETE FROM ModuleOnlineResource WHERE {nameof(Module.Module_Code)} = {ToSQLString(module.Module_Code)}",
                         connection).ExecuteNonQuery();
-                    if (rowsAffected != 1) throw new IndexOutOfRangeException($"{rowsAffected} rows affected in SetModule operation");
                     foreach (string Online_Resourse in module.Online_Resources)
                     {
                         rowsAffected = new SqlCommand(
@@ -315,6 +314,122 @@ namespace StudentManager
                         $"DELETE FROM Module WHERE {nameof(Module.Module_Code)} = {ToSQLString(module.Module_Code)}",
                         connection).ExecuteNonQuery();
                     if (rowsAffected != 1) throw new IndexOutOfRangeException($"Failed RemoveModule operation");
+                    return true;
+                }
+                catch (Exception exception)
+                {
+                    Console.WriteLine(exception.Message);
+                    try { transaction?.Rollback(); }
+                    catch (Exception rolbackException)
+                    {
+                        Console.WriteLine(rolbackException.Message);
+                    }
+                    return false;
+                }
+            }
+
+
+            private bool SetStudentFromQuery(string query, Student setModules = null)
+            {
+                SqlTransaction transaction = null;
+                try
+                {
+                    transaction = connection.BeginTransaction("SetStudent");
+                    int rowsAffected = new SqlCommand(query, connection).ExecuteNonQuery();
+                    if (rowsAffected != 1) throw new IndexOutOfRangeException($"{rowsAffected} rows affected in SetModule operation");
+                    if (setModules == null || SetStudentModules(setModules))
+                        return true;
+                    else throw new Exception("Failed to set Online Resources");
+                }
+                catch (Exception exception)
+                {
+                    Console.WriteLine(exception.Message);
+                    try { transaction?.Rollback(); }
+                    catch (Exception rolbackException)
+                    {
+                        Console.WriteLine(rolbackException.Message);
+                    }
+                    return false;
+                }
+            }
+
+            private bool SetStudentModules(Student student)
+            {
+                SqlTransaction transaction = null;
+                try
+                {
+                    transaction = connection.BeginTransaction("SetStudentModules");
+                    int rowsAffected = new SqlCommand(
+                        $"DELETE FROM StudentModule WHERE {nameof(Student.Student_Number)} = {ToSQLString(student.Student_Number)}",
+                        connection).ExecuteNonQuery();
+                    foreach (var module in student.Modules)
+                    {
+                        rowsAffected = new SqlCommand(
+                            $"INSERT INTO StudentModule ({nameof(Student.Student_Number)}, {nameof(Module.Module_Code)}) " +
+                            $"VALUES ({student.Student_Number}, {module.Module_Code})",
+                            connection).ExecuteNonQuery();
+                        if (rowsAffected != 1) throw new IndexOutOfRangeException($"failed to add module {module.Module_Code}");
+                    }
+                    return true;
+                }
+                catch (Exception exception)
+                {
+                    Console.WriteLine(exception.Message);
+                    try { transaction?.Rollback(); }
+                    catch (Exception rolbackException)
+                    {
+                        Console.WriteLine(rolbackException.Message);
+                    }
+                    return false;
+                }
+            }
+
+            public bool SetStudent(Student student)
+            {
+                var existingModules = GetStudents($"{nameof(Student.Student_Number)} = {ToSQLString(student.Student_Number)}");
+                switch (existingModules.Count)
+                {
+                    case 0:
+                        return SetStudentFromQuery(
+                            $"INSERT INTO Student ({GetStudentAttributesString()}) VALUES (" +
+                            $"{ToSQLString(student.Student_Number)}," +
+                            $"{ToSQLString(student.Student_Name_and_Surname)}," +
+                            $"{ToSQLString(student.DOB.ToString("yyyy-MM-dd"))}," +
+                            $"{ToSQLString(student.Gender)}," +
+                            $"{ToSQLString(student.Phone)}," +
+                            $"{ToSQLString(student.Address)} " +
+                            $")",
+                            student
+                            );
+                    case 1:
+                        return SetStudentFromQuery(
+                            $"UPDATE Student SET " +
+                            $"{nameof(Student.Student_Name_and_Surname)} = {ToSQLString(student.Student_Name_and_Surname)}," +
+                            $"{nameof(Student.DOB)} = {ToSQLString(student.DOB.ToString("yyyy-MM-dd"))}," +
+                            $"{nameof(Student.Gender)} = {ToSQLString(student.Gender)}," +
+                            $"{nameof(Student.Phone)} = {ToSQLString(student.Phone)}," +
+                            $"{nameof(Student.Address)} = {ToSQLString(student.Address)} " +
+                            $"WHERE {nameof(Student.Student_Number)} = {ToSQLString(student.Student_Number)}",
+                            student
+                            );
+                    default:
+                        throw new Exception("Database had duplicate primary keys in table Student");
+                }
+            }
+
+            public bool RemoveStudent(Student student)
+            {
+                SqlTransaction transaction = null;
+                try
+                {
+                    transaction = connection.BeginTransaction("RemoveStudent");
+                    int rowsAffected = new SqlCommand(
+                        $"DELETE FROM StudentModule WHERE {nameof(Student.Student_Number)} = {ToSQLString(student.Student_Number)}",
+                        connection).ExecuteNonQuery();
+                    rowsAffected = new SqlCommand(
+                        $"DELETE FROM Student WHERE {nameof(Student.Student_Number)} = {ToSQLString(student.Student_Number)}",
+                        connection).ExecuteNonQuery();
+                    if (rowsAffected != 1) throw new IndexOutOfRangeException($"Failed RemoveStudent operation");
                     return true;
                 }
                 catch (Exception exception)

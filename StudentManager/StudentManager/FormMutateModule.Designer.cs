@@ -33,8 +33,6 @@ namespace StudentManager
             this.groupBox4 = new System.Windows.Forms.GroupBox();
             this.dataGridViewOnlineResources = new System.Windows.Forms.DataGridView();
             this.panel1 = new System.Windows.Forms.Panel();
-            this.label1 = new System.Windows.Forms.Label();
-            this.comboBox1 = new System.Windows.Forms.ComboBox();
             this.label7 = new System.Windows.Forms.Label();
             this.textBox1 = new System.Windows.Forms.TextBox();
             this.button4 = new System.Windows.Forms.Button();
@@ -43,6 +41,7 @@ namespace StudentManager
             this.richTextBox2 = new System.Windows.Forms.RichTextBox();
             this.richTextBox1 = new System.Windows.Forms.RichTextBox();
             this.textBox3 = new System.Windows.Forms.TextBox();
+            this.button1 = new System.Windows.Forms.Button();
             this.groupBox3.SuspendLayout();
             this.groupBox4.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.dataGridViewOnlineResources)).BeginInit();
@@ -65,9 +64,9 @@ namespace StudentManager
             // 
             this.groupBox4.Controls.Add(this.dataGridViewOnlineResources);
             this.groupBox4.Dock = System.Windows.Forms.DockStyle.Bottom;
-            this.groupBox4.Location = new System.Drawing.Point(3, 254);
+            this.groupBox4.Location = new System.Drawing.Point(3, 223);
             this.groupBox4.Name = "groupBox4";
-            this.groupBox4.Size = new System.Drawing.Size(794, 193);
+            this.groupBox4.Size = new System.Drawing.Size(794, 224);
             this.groupBox4.TabIndex = 0;
             this.groupBox4.TabStop = false;
             this.groupBox4.Text = "Online Resources";
@@ -81,15 +80,14 @@ namespace StudentManager
             this.dataGridViewOnlineResources.Name = "dataGridViewOnlineResources";
             this.dataGridViewOnlineResources.ReadOnly = true;
             this.dataGridViewOnlineResources.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect;
-            this.dataGridViewOnlineResources.Size = new System.Drawing.Size(788, 174);
+            this.dataGridViewOnlineResources.Size = new System.Drawing.Size(788, 205);
             this.dataGridViewOnlineResources.TabIndex = 0;
             // 
             // panel1
             // 
-            this.panel1.Controls.Add(this.label1);
-            this.panel1.Controls.Add(this.comboBox1);
             this.panel1.Controls.Add(this.label7);
             this.panel1.Controls.Add(this.textBox1);
+            this.panel1.Controls.Add(this.button1);
             this.panel1.Controls.Add(this.button4);
             this.panel1.Controls.Add(this.label8);
             this.panel1.Controls.Add(this.label9);
@@ -99,25 +97,8 @@ namespace StudentManager
             this.panel1.Dock = System.Windows.Forms.DockStyle.Top;
             this.panel1.Location = new System.Drawing.Point(3, 16);
             this.panel1.Name = "panel1";
-            this.panel1.Size = new System.Drawing.Size(794, 232);
+            this.panel1.Size = new System.Drawing.Size(794, 204);
             this.panel1.TabIndex = 5;
-            // 
-            // label1
-            // 
-            this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(6, 210);
-            this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(86, 13);
-            this.label1.TabIndex = 6;
-            this.label1.Text = "Submition Action";
-            // 
-            // comboBox1
-            // 
-            this.comboBox1.FormattingEnabled = true;
-            this.comboBox1.Location = new System.Drawing.Point(98, 207);
-            this.comboBox1.Name = "comboBox1";
-            this.comboBox1.Size = new System.Drawing.Size(96, 21);
-            this.comboBox1.TabIndex = 5;
             // 
             // label7
             // 
@@ -130,7 +111,6 @@ namespace StudentManager
             // 
             // textBox1
             // 
-            this.textBox1.Enabled = false;
             this.textBox1.Location = new System.Drawing.Point(47, 29);
             this.textBox1.Name = "textBox1";
             this.textBox1.Size = new System.Drawing.Size(147, 20);
@@ -140,9 +120,9 @@ namespace StudentManager
             // 
             this.button4.Location = new System.Drawing.Point(9, 178);
             this.button4.Name = "button4";
-            this.button4.Size = new System.Drawing.Size(185, 23);
+            this.button4.Size = new System.Drawing.Size(94, 23);
             this.button4.TabIndex = 4;
-            this.button4.Text = "Submit";
+            this.button4.Text = "Edit";
             this.button4.UseVisualStyleBackColor = true;
             // 
             // label8
@@ -166,16 +146,15 @@ namespace StudentManager
             // richTextBox2
             // 
             this.richTextBox2.Dock = System.Windows.Forms.DockStyle.Right;
-            this.richTextBox2.Enabled = false;
             this.richTextBox2.Location = new System.Drawing.Point(200, 0);
             this.richTextBox2.Name = "richTextBox2";
-            this.richTextBox2.Size = new System.Drawing.Size(594, 232);
+            this.richTextBox2.ReadOnly = true;
+            this.richTextBox2.Size = new System.Drawing.Size(594, 204);
             this.richTextBox2.TabIndex = 3;
             this.richTextBox2.Text = "";
             // 
             // richTextBox1
             // 
-            this.richTextBox1.Enabled = false;
             this.richTextBox1.Location = new System.Drawing.Point(9, 74);
             this.richTextBox1.Name = "richTextBox1";
             this.richTextBox1.Size = new System.Drawing.Size(185, 98);
@@ -184,11 +163,19 @@ namespace StudentManager
             // 
             // textBox3
             // 
-            this.textBox3.Enabled = false;
             this.textBox3.Location = new System.Drawing.Point(47, 3);
             this.textBox3.Name = "textBox3";
             this.textBox3.Size = new System.Drawing.Size(147, 20);
             this.textBox3.TabIndex = 2;
+            // 
+            // button1
+            // 
+            this.button1.Location = new System.Drawing.Point(109, 178);
+            this.button1.Name = "button1";
+            this.button1.Size = new System.Drawing.Size(85, 23);
+            this.button1.TabIndex = 4;
+            this.button1.Text = "Delete";
+            this.button1.UseVisualStyleBackColor = true;
             // 
             // FormMutateModule
             // 
@@ -222,7 +209,6 @@ namespace StudentManager
         private System.Windows.Forms.Panel panel1;
         private System.Windows.Forms.Button button4;
         private System.Windows.Forms.RichTextBox richTextBox2;
-        private System.Windows.Forms.Label label1;
-        private System.Windows.Forms.ComboBox comboBox1;
+        private System.Windows.Forms.Button button1;
     }
 }
