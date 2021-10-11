@@ -23,7 +23,7 @@ namespace StudentManager
 
         private void FormView_Load(object sender, EventArgs e)
         {
-            tabControl1.SelectedTab = tabControl1.TabPages[lastOpentab];
+            tabControl1.SelectTab(lastOpentab);
             ProgramInfo.studentAndModuleData = new DatabaseConnection().GetStudentModuleDataView();
 
             ProgramInfo.selectedStudent = null;
@@ -112,7 +112,7 @@ namespace StudentManager
         }
 
         private static int lastOpentab = 0;
-        private void TabControl1_SelectedIndexChanged(object sender, EventArgs e) { lastOpentab = 0; }
+        private void TabControl1_SelectedIndexChanged(object sender, EventArgs e) { lastOpentab = tabControl1.SelectedIndex; }
 
         private void ComboBox2_TextUpdate(object sender, EventArgs e)
         {
@@ -140,6 +140,20 @@ namespace StudentManager
         private void ComboBox1_SelectedIndexChanged(object sender, EventArgs e)
         {
             ComboBox1_TextUpdate(null, null);
+        }
+
+        private void Button5_Click(object sender, EventArgs e)
+        {
+            comboBox1.Text = "";
+            dataGridViewStudent.DataSource = ProgramInfo.studentAndModuleData.students;
+            dataGridViewStudent.Refresh();
+        }
+
+        private void Button6_Click(object sender, EventArgs e)
+        {
+            comboBox2.Text = "";
+            dataGridViewModule.DataSource = ProgramInfo.studentAndModuleData.modules;
+            dataGridViewModule.Refresh();
         }
     }
 }

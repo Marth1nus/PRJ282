@@ -32,6 +32,7 @@ namespace StudentManager
             this.tabControl1 = new System.Windows.Forms.TabControl();
             this.tabPage1 = new System.Windows.Forms.TabPage();
             this.panel1 = new System.Windows.Forms.Panel();
+            this.button5 = new System.Windows.Forms.Button();
             this.label10 = new System.Windows.Forms.Label();
             this.comboBox1 = new System.Windows.Forms.ComboBox();
             this.dataGridViewStudent = new System.Windows.Forms.DataGridView();
@@ -54,6 +55,7 @@ namespace StudentManager
             this.dataGridViewModuleCodes = new System.Windows.Forms.DataGridView();
             this.tabPage2 = new System.Windows.Forms.TabPage();
             this.panel2 = new System.Windows.Forms.Panel();
+            this.button6 = new System.Windows.Forms.Button();
             this.label11 = new System.Windows.Forms.Label();
             this.comboBox2 = new System.Windows.Forms.ComboBox();
             this.dataGridViewModule = new System.Windows.Forms.DataGridView();
@@ -109,6 +111,7 @@ namespace StudentManager
             // 
             // panel1
             // 
+            this.panel1.Controls.Add(this.button5);
             this.panel1.Controls.Add(this.label10);
             this.panel1.Controls.Add(this.comboBox1);
             this.panel1.Controls.Add(this.dataGridViewStudent);
@@ -117,6 +120,16 @@ namespace StudentManager
             this.panel1.Name = "panel1";
             this.panel1.Size = new System.Drawing.Size(586, 418);
             this.panel1.TabIndex = 2;
+            // 
+            // button5
+            // 
+            this.button5.Location = new System.Drawing.Point(341, 5);
+            this.button5.Name = "button5";
+            this.button5.Size = new System.Drawing.Size(75, 23);
+            this.button5.TabIndex = 5;
+            this.button5.Text = "Show All";
+            this.button5.UseVisualStyleBackColor = true;
+            this.button5.Click += new System.EventHandler(this.Button5_Click);
             // 
             // label10
             // 
@@ -340,6 +353,7 @@ namespace StudentManager
             // 
             // panel2
             // 
+            this.panel2.Controls.Add(this.button6);
             this.panel2.Controls.Add(this.label11);
             this.panel2.Controls.Add(this.comboBox2);
             this.panel2.Controls.Add(this.dataGridViewModule);
@@ -348,6 +362,16 @@ namespace StudentManager
             this.panel2.Name = "panel2";
             this.panel2.Size = new System.Drawing.Size(586, 418);
             this.panel2.TabIndex = 2;
+            // 
+            // button6
+            // 
+            this.button6.Location = new System.Drawing.Point(324, 5);
+            this.button6.Name = "button6";
+            this.button6.Size = new System.Drawing.Size(75, 23);
+            this.button6.TabIndex = 7;
+            this.button6.Text = "Show All";
+            this.button6.UseVisualStyleBackColor = true;
+            this.button6.Click += new System.EventHandler(this.Button6_Click);
             // 
             // label11
             // 
@@ -573,5 +597,7 @@ namespace StudentManager
         private System.Windows.Forms.ComboBox comboBox2;
         private System.Windows.Forms.Label label10;
         private System.Windows.Forms.Label label11;
+        private System.Windows.Forms.Button button5;
+        private System.Windows.Forms.Button button6;
     }
 }
