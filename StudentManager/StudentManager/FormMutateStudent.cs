@@ -194,7 +194,7 @@ namespace StudentManager
             }
         }
 
-        private void ComboBox1_SelectedIndexChanged(object sender, EventArgs e)
+        private void comboBox1_TextUpdate(object sender, EventArgs e)
         {
             var selectedModule = ProgramInfo.studentAndModuleData.modules.Find(module => module.Module_Code == comboBox1.Text);
             button3.Enabled = (selectedModule != null && GetModulesFromGrid()?.Find(module => module?.Module_Code == selectedModule.Module_Code) == null);

@@ -38,6 +38,7 @@ namespace StudentManager
                 button1.Text = "Log Out";
                 button2.Enabled = button3.Enabled = true;
             }
+            button2.Enabled = true;
         }
 
         private void Button1_Click(object sender, EventArgs e)
@@ -58,6 +59,7 @@ namespace StudentManager
                     button1.Text = "Log In";
                     labelLoggedIn.Text = "";
                     button2.Enabled = button3.Enabled = false;
+                    button2.Enabled = true;
                 }
                 else
                 {
@@ -74,6 +76,7 @@ namespace StudentManager
                 labelLoggedIn.Text = "";
                 button1.Text = "Log In";
                 button2.Enabled = button3.Enabled = false;
+                button2.Enabled = true;
             }
         }
 

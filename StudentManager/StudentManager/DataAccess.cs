@@ -83,7 +83,7 @@ namespace StudentManager
                         };
 
                         SqlCommand ModuleResourcesCommand = new SqlCommand(
-                            $"SELECT ResourceURL FROM ModuleOnlineResource WHERE Module_Code = {ToSQLString(newModule.Module_Code)}",
+                            $"SELECT ResourceURL FROM ModuleOnlineResource WHERE {nameof(Module.Module_Code)} = {ToSQLString(newModule.Module_Code)}",
                             connection);
                         SqlDataReader ModuleResourcesReader = ModuleResourcesCommand.ExecuteReader();
                         while (ModuleResourcesReader.Read())

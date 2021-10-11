@@ -23,40 +23,23 @@ namespace StudentManager
 
         private void FormView_Load(object sender, EventArgs e)
         {
+            tabControl1.SelectedTab = tabControl1.TabPages[lastOpentab];
             ProgramInfo.studentAndModuleData = new DatabaseConnection().GetStudentModuleDataView();
-            ProgramInfo.studentAndModuleData = new StudentAndModuleData()
-            {
-                students = new List<Student>
-                {
-                    new Student(){ Student_Number = "123", Student_Name_and_Surname = "number0" },
-                    new Student(){ Student_Number = "345", Student_Name_and_Surname = "number1" },
-                    new Student(){ Student_Number = "456", Student_Name_and_Surname = "number2", DOB = DateTime.Now },
-                },
-                modules = new List<Module>
-                {
-                    new Module(){ Module_Code = "prgasd", Module_Name = "as534f", Module_Description = "hefd2345h" },
-                    new Module(){ Module_Code = "pr123gasd", Module_Name = "123asf", Module_Description = "hefd2345h" },
-                    new Module(){ Module_Code = "prga123213sd", Module_Name = "as456f", Module_Description = "hef2345dh" },
-                    new Module(){ Module_Code = "prg321asd", Module_Name = "asf6345", Module_Description = "hefd2345h", 
-                        Online_Resources = new List<string>
-                        {
-                            "https://Place1.com",
-                            "https://Place2.com",
-                            "https://Place3.com",
-                            "https://Place4.com",
-                        }
-                    }
-                }
-            };
-            ProgramInfo.studentAndModuleData.students[0].Modules = ProgramInfo.studentAndModuleData.modules;
 
             ProgramInfo.selectedStudent = null;
             dataGridViewStudent.DataSource = ProgramInfo.studentAndModuleData.students;
             dataGridViewStudent.Refresh();
+            if (ProgramInfo.studentAndModuleData?.students != null)
+                foreach (var student in ProgramInfo.studentAndModuleData.students)
+                    comboBox1.Items.Add(student.Student_Number);
 
             ProgramInfo.selectedModule = null;
             dataGridViewModule.DataSource = ProgramInfo.studentAndModuleData.modules;
-            dataGridViewModule.Refresh(); 
+            dataGridViewModule.Refresh();
+            if (ProgramInfo.studentAndModuleData?.modules != null)
+                foreach (var module in ProgramInfo.studentAndModuleData.modules)
+                    comboBox2.Items.Add(module.Module_Code);
+
         }
 
         private class ModuleResource { public string OnlineResource { get; set; } }
@@ -117,6 +100,24 @@ namespace StudentManager
         {
             ProgramInfo.nextForm = ProgramInfo.Form.MutateModule;
             Close();
+        }
+
+        private static int lastOpentab = 0;
+        private void TabControl1_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            lastOpentab = 0;
+        }
+
+        private void ComboBox2_TextUpdate(object sender, EventArgs e)
+        {
+            dataGridViewModule.DataSource = ProgramInfo.studentAndModuleData.modules.FindAll(module => module.Module_Code == comboBox2.Text);
+            dataGridViewModule.Refresh();
+        }
+
+        private void ComboBox1_TextUpdate(object sender, EventArgs e)
+        {
+            dataGridViewStudent.DataSource = ProgramInfo.studentAndModuleData.students.FindAll(student => student.Student_Number == comboBox1.Text);
+            dataGridViewStudent.Refresh();
         }
     }
 }

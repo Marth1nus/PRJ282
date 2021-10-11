@@ -30,22 +30,6 @@ namespace StudentManager
         private void InitializeComponent()
         {
             this.groupBox1 = new System.Windows.Forms.GroupBox();
-            this.panel1 = new System.Windows.Forms.Panel();
-            this.richTextBox1 = new System.Windows.Forms.RichTextBox();
-            this.button1 = new System.Windows.Forms.Button();
-            this.button2 = new System.Windows.Forms.Button();
-            this.label1 = new System.Windows.Forms.Label();
-            this.textBoxStudentNumber = new System.Windows.Forms.TextBox();
-            this.textBoxStudentAddress = new System.Windows.Forms.TextBox();
-            this.label2 = new System.Windows.Forms.Label();
-            this.label6 = new System.Windows.Forms.Label();
-            this.textBoxStudentName = new System.Windows.Forms.TextBox();
-            this.textBoxStudentPhone = new System.Windows.Forms.TextBox();
-            this.label3 = new System.Windows.Forms.Label();
-            this.label5 = new System.Windows.Forms.Label();
-            this.textBoxStudentBirthdate = new System.Windows.Forms.TextBox();
-            this.textBoxStudentGender = new System.Windows.Forms.TextBox();
-            this.label4 = new System.Windows.Forms.Label();
             this.groupBox2 = new System.Windows.Forms.GroupBox();
             this.comboBox1 = new System.Windows.Forms.ComboBox();
             this.button4 = new System.Windows.Forms.Button();
@@ -55,12 +39,28 @@ namespace StudentManager
             this.Module_Name = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.Module_Description = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.label7 = new System.Windows.Forms.Label();
-            this.textBoxStudentImage = new System.Windows.Forms.TextBox();
+            this.panel1 = new System.Windows.Forms.Panel();
+            this.richTextBox1 = new System.Windows.Forms.RichTextBox();
+            this.button1 = new System.Windows.Forms.Button();
+            this.button2 = new System.Windows.Forms.Button();
+            this.label1 = new System.Windows.Forms.Label();
+            this.textBoxStudentNumber = new System.Windows.Forms.TextBox();
+            this.textBoxStudentAddress = new System.Windows.Forms.TextBox();
             this.label8 = new System.Windows.Forms.Label();
+            this.label2 = new System.Windows.Forms.Label();
+            this.label6 = new System.Windows.Forms.Label();
+            this.textBoxStudentImage = new System.Windows.Forms.TextBox();
+            this.textBoxStudentName = new System.Windows.Forms.TextBox();
+            this.textBoxStudentPhone = new System.Windows.Forms.TextBox();
+            this.label3 = new System.Windows.Forms.Label();
+            this.label5 = new System.Windows.Forms.Label();
+            this.textBoxStudentBirthdate = new System.Windows.Forms.TextBox();
+            this.textBoxStudentGender = new System.Windows.Forms.TextBox();
+            this.label4 = new System.Windows.Forms.Label();
             this.groupBox1.SuspendLayout();
-            this.panel1.SuspendLayout();
             this.groupBox2.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.dataGridViewModuleCodes)).BeginInit();
+            this.panel1.SuspendLayout();
             this.SuspendLayout();
             // 
             // groupBox1
@@ -74,6 +74,98 @@ namespace StudentManager
             this.groupBox1.TabIndex = 1;
             this.groupBox1.TabStop = false;
             this.groupBox1.Text = "Selected Student";
+            // 
+            // groupBox2
+            // 
+            this.groupBox2.Controls.Add(this.comboBox1);
+            this.groupBox2.Controls.Add(this.button4);
+            this.groupBox2.Controls.Add(this.button3);
+            this.groupBox2.Controls.Add(this.dataGridViewModuleCodes);
+            this.groupBox2.Controls.Add(this.label7);
+            this.groupBox2.Dock = System.Windows.Forms.DockStyle.Bottom;
+            this.groupBox2.Location = new System.Drawing.Point(3, 237);
+            this.groupBox2.Name = "groupBox2";
+            this.groupBox2.Size = new System.Drawing.Size(794, 210);
+            this.groupBox2.TabIndex = 0;
+            this.groupBox2.TabStop = false;
+            this.groupBox2.Text = "Module Codes";
+            // 
+            // comboBox1
+            // 
+            this.comboBox1.AutoCompleteMode = System.Windows.Forms.AutoCompleteMode.Append;
+            this.comboBox1.AutoCompleteSource = System.Windows.Forms.AutoCompleteSource.ListItems;
+            this.comboBox1.FormattingEnabled = true;
+            this.comboBox1.Location = new System.Drawing.Point(85, 12);
+            this.comboBox1.Name = "comboBox1";
+            this.comboBox1.Size = new System.Drawing.Size(121, 21);
+            this.comboBox1.Sorted = true;
+            this.comboBox1.TabIndex = 4;
+            this.comboBox1.TextUpdate += new System.EventHandler(this.comboBox1_TextUpdate);
+            // 
+            // button4
+            // 
+            this.button4.Location = new System.Drawing.Point(293, 11);
+            this.button4.Name = "button4";
+            this.button4.Size = new System.Drawing.Size(75, 23);
+            this.button4.TabIndex = 3;
+            this.button4.Text = "Delete";
+            this.button4.UseVisualStyleBackColor = true;
+            this.button4.Click += new System.EventHandler(this.Button4_Click);
+            // 
+            // button3
+            // 
+            this.button3.Location = new System.Drawing.Point(212, 11);
+            this.button3.Name = "button3";
+            this.button3.Size = new System.Drawing.Size(75, 23);
+            this.button3.TabIndex = 3;
+            this.button3.Text = "Add";
+            this.button3.UseVisualStyleBackColor = true;
+            this.button3.Click += new System.EventHandler(this.Button3_Click);
+            // 
+            // dataGridViewModuleCodes
+            // 
+            this.dataGridViewModuleCodes.AllowDrop = true;
+            this.dataGridViewModuleCodes.AllowUserToOrderColumns = true;
+            this.dataGridViewModuleCodes.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
+            this.dataGridViewModuleCodes.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
+            this.Module_Code,
+            this.Module_Name,
+            this.Module_Description});
+            this.dataGridViewModuleCodes.Dock = System.Windows.Forms.DockStyle.Bottom;
+            this.dataGridViewModuleCodes.Location = new System.Drawing.Point(3, 40);
+            this.dataGridViewModuleCodes.Name = "dataGridViewModuleCodes";
+            this.dataGridViewModuleCodes.ReadOnly = true;
+            this.dataGridViewModuleCodes.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect;
+            this.dataGridViewModuleCodes.Size = new System.Drawing.Size(788, 167);
+            this.dataGridViewModuleCodes.TabIndex = 0;
+            this.dataGridViewModuleCodes.CellClick += new System.Windows.Forms.DataGridViewCellEventHandler(this.DataGridViewModuleCodes_CellClick);
+            // 
+            // Module_Code
+            // 
+            this.Module_Code.HeaderText = "Module_Code";
+            this.Module_Code.Name = "Module_Code";
+            this.Module_Code.ReadOnly = true;
+            // 
+            // Module_Name
+            // 
+            this.Module_Name.HeaderText = "Module_Name";
+            this.Module_Name.Name = "Module_Name";
+            this.Module_Name.ReadOnly = true;
+            // 
+            // Module_Description
+            // 
+            this.Module_Description.HeaderText = "Module_Description";
+            this.Module_Description.Name = "Module_Description";
+            this.Module_Description.ReadOnly = true;
+            // 
+            // label7
+            // 
+            this.label7.AutoSize = true;
+            this.label7.Location = new System.Drawing.Point(9, 16);
+            this.label7.Name = "label7";
+            this.label7.Size = new System.Drawing.Size(70, 13);
+            this.label7.TabIndex = 1;
+            this.label7.Text = "Module Code";
             // 
             // panel1
             // 
@@ -153,6 +245,15 @@ namespace StudentManager
             this.textBoxStudentAddress.Size = new System.Drawing.Size(100, 20);
             this.textBoxStudentAddress.TabIndex = 2;
             // 
+            // label8
+            // 
+            this.label8.AutoSize = true;
+            this.label8.Location = new System.Drawing.Point(6, 58);
+            this.label8.Name = "label8";
+            this.label8.Size = new System.Drawing.Size(36, 13);
+            this.label8.TabIndex = 1;
+            this.label8.Text = "Image";
+            // 
             // label2
             // 
             this.label2.AutoSize = true;
@@ -170,6 +271,13 @@ namespace StudentManager
             this.label6.Size = new System.Drawing.Size(45, 13);
             this.label6.TabIndex = 1;
             this.label6.Text = "Address";
+            // 
+            // textBoxStudentImage
+            // 
+            this.textBoxStudentImage.Location = new System.Drawing.Point(94, 55);
+            this.textBoxStudentImage.Name = "textBoxStudentImage";
+            this.textBoxStudentImage.Size = new System.Drawing.Size(100, 20);
+            this.textBoxStudentImage.TabIndex = 2;
             // 
             // textBoxStudentName
             // 
@@ -226,113 +334,6 @@ namespace StudentManager
             this.label4.TabIndex = 1;
             this.label4.Text = "Gender";
             // 
-            // groupBox2
-            // 
-            this.groupBox2.Controls.Add(this.comboBox1);
-            this.groupBox2.Controls.Add(this.button4);
-            this.groupBox2.Controls.Add(this.button3);
-            this.groupBox2.Controls.Add(this.dataGridViewModuleCodes);
-            this.groupBox2.Controls.Add(this.label7);
-            this.groupBox2.Dock = System.Windows.Forms.DockStyle.Bottom;
-            this.groupBox2.Location = new System.Drawing.Point(3, 237);
-            this.groupBox2.Name = "groupBox2";
-            this.groupBox2.Size = new System.Drawing.Size(794, 210);
-            this.groupBox2.TabIndex = 0;
-            this.groupBox2.TabStop = false;
-            this.groupBox2.Text = "Module Codes";
-            // 
-            // comboBox1
-            // 
-            this.comboBox1.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
-            this.comboBox1.FormattingEnabled = true;
-            this.comboBox1.Location = new System.Drawing.Point(85, 12);
-            this.comboBox1.Name = "comboBox1";
-            this.comboBox1.Size = new System.Drawing.Size(121, 21);
-            this.comboBox1.Sorted = true;
-            this.comboBox1.TabIndex = 4;
-            this.comboBox1.SelectedIndexChanged += new System.EventHandler(this.ComboBox1_SelectedIndexChanged);
-            // 
-            // button4
-            // 
-            this.button4.Location = new System.Drawing.Point(293, 11);
-            this.button4.Name = "button4";
-            this.button4.Size = new System.Drawing.Size(75, 23);
-            this.button4.TabIndex = 3;
-            this.button4.Text = "Delete";
-            this.button4.UseVisualStyleBackColor = true;
-            this.button4.Click += new System.EventHandler(this.Button4_Click);
-            // 
-            // button3
-            // 
-            this.button3.Location = new System.Drawing.Point(212, 11);
-            this.button3.Name = "button3";
-            this.button3.Size = new System.Drawing.Size(75, 23);
-            this.button3.TabIndex = 3;
-            this.button3.Text = "Add";
-            this.button3.UseVisualStyleBackColor = true;
-            this.button3.Click += new System.EventHandler(this.Button3_Click);
-            // 
-            // dataGridViewModuleCodes
-            // 
-            this.dataGridViewModuleCodes.AllowDrop = true;
-            this.dataGridViewModuleCodes.AllowUserToOrderColumns = true;
-            this.dataGridViewModuleCodes.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
-            this.dataGridViewModuleCodes.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
-            this.Module_Code,
-            this.Module_Name,
-            this.Module_Description});
-            this.dataGridViewModuleCodes.Dock = System.Windows.Forms.DockStyle.Bottom;
-            this.dataGridViewModuleCodes.Location = new System.Drawing.Point(3, 40);
-            this.dataGridViewModuleCodes.Name = "dataGridViewModuleCodes";
-            this.dataGridViewModuleCodes.ReadOnly = true;
-            this.dataGridViewModuleCodes.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect;
-            this.dataGridViewModuleCodes.Size = new System.Drawing.Size(788, 167);
-            this.dataGridViewModuleCodes.TabIndex = 0;
-            this.dataGridViewModuleCodes.CellClick += new System.Windows.Forms.DataGridViewCellEventHandler(this.DataGridViewModuleCodes_CellClick);
-            // 
-            // Module_Code
-            // 
-            this.Module_Code.HeaderText = "Module_Code";
-            this.Module_Code.Name = "Module_Code";
-            this.Module_Code.ReadOnly = true;
-            // 
-            // Module_Name
-            // 
-            this.Module_Name.HeaderText = "Module_Name";
-            this.Module_Name.Name = "Module_Name";
-            this.Module_Name.ReadOnly = true;
-            // 
-            // Module_Description
-            // 
-            this.Module_Description.HeaderText = "Module_Description";
-            this.Module_Description.Name = "Module_Description";
-            this.Module_Description.ReadOnly = true;
-            // 
-            // label7
-            // 
-            this.label7.AutoSize = true;
-            this.label7.Location = new System.Drawing.Point(9, 16);
-            this.label7.Name = "label7";
-            this.label7.Size = new System.Drawing.Size(70, 13);
-            this.label7.TabIndex = 1;
-            this.label7.Text = "Module Code";
-            // 
-            // textBoxStudentImage
-            // 
-            this.textBoxStudentImage.Location = new System.Drawing.Point(94, 55);
-            this.textBoxStudentImage.Name = "textBoxStudentImage";
-            this.textBoxStudentImage.Size = new System.Drawing.Size(100, 20);
-            this.textBoxStudentImage.TabIndex = 2;
-            // 
-            // label8
-            // 
-            this.label8.AutoSize = true;
-            this.label8.Location = new System.Drawing.Point(6, 58);
-            this.label8.Name = "label8";
-            this.label8.Size = new System.Drawing.Size(36, 13);
-            this.label8.TabIndex = 1;
-            this.label8.Text = "Image";
-            // 
             // FormMutateStudent
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -343,11 +344,11 @@ namespace StudentManager
             this.Text = "FormMutateStudent";
             this.Load += new System.EventHandler(this.FormMutateStudent_Load);
             this.groupBox1.ResumeLayout(false);
-            this.panel1.ResumeLayout(false);
-            this.panel1.PerformLayout();
             this.groupBox2.ResumeLayout(false);
             this.groupBox2.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.dataGridViewModuleCodes)).EndInit();
+            this.panel1.ResumeLayout(false);
+            this.panel1.PerformLayout();
             this.ResumeLayout(false);
 
         }
