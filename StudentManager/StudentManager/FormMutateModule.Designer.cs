@@ -36,6 +36,7 @@ namespace StudentManager
             this.label1 = new System.Windows.Forms.Label();
             this.textBox2 = new System.Windows.Forms.TextBox();
             this.dataGridViewOnlineResources = new System.Windows.Forms.DataGridView();
+            this.URL = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.panel1 = new System.Windows.Forms.Panel();
             this.label7 = new System.Windows.Forms.Label();
             this.textBox1 = new System.Windows.Forms.TextBox();
@@ -46,7 +47,6 @@ namespace StudentManager
             this.richTextBox2 = new System.Windows.Forms.RichTextBox();
             this.richTextBox1 = new System.Windows.Forms.RichTextBox();
             this.textBox3 = new System.Windows.Forms.TextBox();
-            this.URL = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.groupBox3.SuspendLayout();
             this.groupBox4.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.dataGridViewOnlineResources)).BeginInit();
@@ -115,6 +115,7 @@ namespace StudentManager
             this.textBox2.Name = "textBox2";
             this.textBox2.Size = new System.Drawing.Size(144, 20);
             this.textBox2.TabIndex = 1;
+            this.textBox2.TextChanged += new System.EventHandler(this.TextBox2_TextChanged);
             // 
             // dataGridViewOnlineResources
             // 
@@ -130,6 +131,12 @@ namespace StudentManager
             this.dataGridViewOnlineResources.Size = new System.Drawing.Size(788, 174);
             this.dataGridViewOnlineResources.TabIndex = 0;
             this.dataGridViewOnlineResources.CellClick += new System.Windows.Forms.DataGridViewCellEventHandler(this.DataGridViewOnlineResources_CellClick);
+            // 
+            // URL
+            // 
+            this.URL.HeaderText = "URL";
+            this.URL.Name = "URL";
+            this.URL.ReadOnly = true;
             // 
             // panel1
             // 
@@ -226,12 +233,6 @@ namespace StudentManager
             this.textBox3.Name = "textBox3";
             this.textBox3.Size = new System.Drawing.Size(147, 20);
             this.textBox3.TabIndex = 2;
-            // 
-            // URL
-            // 
-            this.URL.HeaderText = "URL";
-            this.URL.Name = "URL";
-            this.URL.ReadOnly = true;
             // 
             // FormMutateModule
             // 

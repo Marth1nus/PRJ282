@@ -29,41 +29,51 @@ namespace StudentManager
         private bool inViewMode = false;
         private void EditMode()
         {
-            inViewMode = false;
-            textBox3.Enabled =
-            textBox1.Enabled =
-            richTextBox1.Enabled =
-
-            dataGridViewOnlineResources.Enabled =
-            textBox2.Enabled =
-            button3.Enabled =
-            button4.Enabled = true;
-
-            button1.Enabled = ProgramInfo.selectedModule != null;
             button2.Text = "Save";
-        }
 
-        private void ViewMode()
-        {
-            inViewMode = true;
-            textBox3.Enabled =
+            textBox3.Enabled = ProgramInfo.selectedModule == null;
+
             textBox1.Enabled =
             richTextBox1.Enabled =
 
             dataGridViewOnlineResources.Enabled =
-            textBox2.Enabled =
+            textBox2.Enabled = true;
             button3.Enabled = 
             button4.Enabled = false;
 
             button1.Enabled = ProgramInfo.selectedModule != null;
-            button2.Text = "Edit";
+
+            inViewMode = false;
+
+            richTextBox2.Text += 
+                $"Please {(ProgramInfo.selectedModule == null ? "enter" : "edit")} then save new module information\n";
+        }
+
+        private void ViewMode()
+        {
+            button2.Text = ProgramInfo.selectedModule != null ? "Edit" : "Create";
+            button1.Enabled = ProgramInfo.selectedModule != null;
+
+            textBox3.Enabled =
+            textBox1.Enabled =
+            richTextBox1.Enabled =
+
+            dataGridViewOnlineResources.Enabled =
+            textBox2.Enabled = 
+            button3.Enabled = 
+            button4.Enabled = false;
+
 
             textBox3.Text = ProgramInfo.selectedModule?.Module_Code;
             textBox1.Text = ProgramInfo.selectedModule?.Module_Name;
             richTextBox1.Text = ProgramInfo.selectedModule?.Module_Description;
+
             dataGridViewOnlineResources.Rows.Clear();
-            foreach (var url in ProgramInfo.selectedModule?.Online_Resources)
-                dataGridViewOnlineResources.Rows.Add(url);
+            if (ProgramInfo.selectedModule?.Online_Resources != null)
+                foreach (var url in ProgramInfo.selectedModule?.Online_Resources)
+                    dataGridViewOnlineResources.Rows.Add(url);
+
+            inViewMode = true;
         }
 
         private Module GetModuleFromFields()
@@ -75,7 +85,7 @@ namespace StudentManager
                     Module_Code = textBox3.Text,
                     Module_Name = textBox1.Text,
                     Module_Description = richTextBox1.Text,
-                    Online_Resources = (from DataGridViewRow row in dataGridViewOnlineResources.Rows select row.Cells[0].Value as string).ToList()
+                    Online_Resources = (from DataGridViewRow row in dataGridViewOnlineResources.Rows select row.Cells[0].Value?.ToString()).ToList()
                 };
             }
             catch (Exception exception)
@@ -87,9 +97,9 @@ namespace StudentManager
 
         private void FormMutateModule_Load(object sender, EventArgs e)
         {
-            if (ProgramInfo.selectedModule != null)
-                ViewMode();
-            EditMode();
+            ViewMode();
+            if (ProgramInfo.selectedModule == null && false)
+                EditMode();
         }
 
         private void Button2_Click(object sender, EventArgs e)
@@ -99,7 +109,7 @@ namespace StudentManager
             {
                 ProgramInfo.selectedModule = GetModuleFromFields();
                 if (ProgramInfo.selectedModule != null)
-                    if (new DataAccess.DatabaseConnection().SetModule(ProgramInfo.selectedModule))
+                    if (new DataAccess.DatabaseConnection().SetOrAddModule(ProgramInfo.selectedModule))
                     {
                         richTextBox2.Text += "Module update success\n";
                         ViewMode();
@@ -125,18 +135,18 @@ namespace StudentManager
                     richTextBox2.Text += "Deletion Failed\n";
         }
 
-        private DataGridViewRow selectedModuleResourceRow = null;
         private void DataGridViewOnlineResources_CellClick(object sender, DataGridViewCellEventArgs e)
         {
             try
             {
-                selectedModuleResourceRow = dataGridViewOnlineResources.SelectedRows[0];
-                textBox2.Text = selectedModuleResourceRow.Cells[0].Value as string;
+                var value = dataGridViewOnlineResources.SelectedRows[0].Cells[0].Value;
+                button4.Enabled = value != null;
+                textBox2.Text = "";
             }
             catch (Exception exception)
             {
                 Console.WriteLine(exception);
-                selectedModuleResourceRow = null;
+                button4.Enabled = false;
             }
         }
 
@@ -144,8 +154,9 @@ namespace StudentManager
         {
             try
             {
-                if (selectedModuleResourceRow != null)
-                    dataGridViewOnlineResources.Rows.Remove(selectedModuleResourceRow);
+                dataGridViewOnlineResources.Rows.Remove(dataGridViewOnlineResources.SelectedRows[0]);
+                richTextBox2.Text += "Removed URL\n";
+                DataGridViewOnlineResources_CellClick(null, null);
             }
             catch (Exception exception)
             {
@@ -153,19 +164,20 @@ namespace StudentManager
             }
             finally
             {
-                selectedModuleResourceRow = null;
                 textBox2.Text = "";
             }
         }
 
         private void Button3_Click(object sender, EventArgs e)
         {
-            if (selectedModuleResourceRow == null)
-                dataGridViewOnlineResources.Rows.Add(textBox2.Text);
-            else
-                selectedModuleResourceRow.SetValues(textBox2.Text);
-            selectedModuleResourceRow = null;
+            dataGridViewOnlineResources.Rows.Add(textBox2.Text);
             textBox2.Text = "";
+            richTextBox2.Text += "Added URL\n";
+        }
+
+        private void TextBox2_TextChanged(object sender, EventArgs e)
+        {
+            button3.Enabled = textBox2.Text.Length > 0;
         }
     }
 }

@@ -18,15 +18,22 @@ namespace StudentManager
         {
             private static string ToSQLString(string cString)
             {
-                /* replace: \ => \\, (newline) => \n, " => \" */
+                /* replace: \ => \\, (newline) => \n, " => \" 
+                 * invellop in ''
+                 */
                 return $"\'{cString.Replace("\\", "\\\\").Replace("\n", "\\n").Replace("\"", "\\\"")}\'";
+            }
+
+            private static string ToSQLString(DateTime cDate)
+            {
+                return $"\'{cDate:yyyy/MM/dd}\'";
             }
 
             private readonly SqlConnection connection = new SqlConnection(DatabaseConnectionString);
             public DatabaseConnection() 
             {
                 try { connection.Open(); }
-                catch (Exception exception) { Console.WriteLine(exception.Message); }
+                catch (Exception exception) { Console.WriteLine(exception); }
             }
             ~DatabaseConnection() { connection.Close(); }
 
@@ -38,12 +45,13 @@ namespace StudentManager
             {
                 var modules = GetModules();
                 var students = GetStudents();
+
                 if (students != null && modules != null)
-                {   // scrap copies
-                    List<string> Module_Codes = modules.ConvertAll<string>(module => module.Module_Code);
-                    foreach (var student in students)
-                        student.Modules = modules.FindAll(module => Module_Codes.Contains(module.Module_Code));
-                }
+                    foreach (var student in students) // merge copies
+                        student.Modules = (from Module sModule in student.Modules
+                                           select modules.Find(module=>module.Module_Code == sModule.Module_Code)
+                                           ).ToList();
+
                 return new StudentAndModuleData() { modules = modules, students = students };
             }
 
@@ -75,7 +83,7 @@ namespace StudentManager
                         };
 
                         SqlCommand ModuleResourcesCommand = new SqlCommand(
-                            $"SELECT ResourceURL FROM ModuleOnlineResource WHERE Module_Code = {newModule.Module_Code}",
+                            $"SELECT ResourceURL FROM ModuleOnlineResource WHERE Module_Code = {ToSQLString(newModule.Module_Code)}",
                             connection);
                         SqlDataReader ModuleResourcesReader = ModuleResourcesCommand.ExecuteReader();
                         while (ModuleResourcesReader.Read())
@@ -87,7 +95,7 @@ namespace StudentManager
                 }
                 catch (Exception exception)
                 {
-                    Console.WriteLine(exception.Message);
+                    Console.WriteLine(exception);
                     try { transaction?.Rollback(); }
                     catch (Exception rolbackException)
                     {
@@ -172,7 +180,7 @@ namespace StudentManager
                 }
                 catch (Exception exception)
                 {
-                    Console.WriteLine(exception.Message);
+                    Console.WriteLine(exception);
                     return null;
                 }
             }
@@ -192,7 +200,7 @@ namespace StudentManager
                         );
             }
 
-            public List<Student> GetStudentsWithModules(List<string> moduleCodes)
+            private List<Student> GetStudentsWithModules(List<string> moduleCodes)
             {
                 string whereParam = "";
                 foreach (var moduleCode in moduleCodes)
@@ -217,7 +225,7 @@ namespace StudentManager
             */
 
 
-            private bool SetModuleFromQuery(string query, Module Online_Resources = null)
+            private bool SetOrAddModuleFromQuery(string query, Module Online_Resources = null)
             {
                 SqlTransaction transaction = null;
                 try
@@ -231,7 +239,7 @@ namespace StudentManager
                 }
                 catch (Exception exception)
                 {
-                    Console.WriteLine(exception.Message);
+                    Console.WriteLine(exception);
                     try { transaction?.Rollback(); }
                     catch (Exception rolbackException)
                     {
@@ -240,6 +248,12 @@ namespace StudentManager
                     return false;
                 }
             }
+
+            /*
+             *  NOTE : With set or add functions consider using SqlCommand.Parameter.AddWithValue(varName, value)
+             *      to reaplace using ToSQLString mothod as the SqlCommand class has that functionality implimented
+             *      likely in much more detail and much less lazily. For now as 
+             */
 
             private bool SetModuleOnlineResource(Module module)
             {
@@ -264,7 +278,7 @@ namespace StudentManager
                 }
                 catch (Exception exception)
                 {
-                    Console.WriteLine(exception.Message);
+                    Console.WriteLine(exception);
                     try { transaction?.Rollback(); }
                     catch (Exception rolbackException)
                     {
@@ -274,11 +288,11 @@ namespace StudentManager
                 }
             }
 
-            public bool SetModule(Module module)
+            public bool SetOrAddModule(Module module)
             {
                 var existingModules = GetModules($"{nameof(Module.Module_Code)} = {ToSQLString(module.Module_Code)}");
                 if (existingModules == null || existingModules.Count == 0)
-                    return SetModuleFromQuery(
+                    return SetOrAddModuleFromQuery(
                         $"INSERT INTO Module ({GetModuleAttributesString()}) VALUES (" +
                         $"{ToSQLString(module.Module_Code)}," +
                         $"{ToSQLString(module.Module_Name)}," +
@@ -287,7 +301,7 @@ namespace StudentManager
                         module
                         );
                 else if (existingModules.Count == 1)
-                    return SetModuleFromQuery(
+                    return SetOrAddModuleFromQuery(
                         $"UPDATE Module SET " +
                         $"{nameof(Module.Module_Name)} = {ToSQLString(module.Module_Name)}," +
                         $"{nameof(Module.Module_Description)} = {ToSQLString(module.Module_Description)} " +
@@ -315,7 +329,7 @@ namespace StudentManager
                 }
                 catch (Exception exception)
                 {
-                    Console.WriteLine(exception.Message);
+                    Console.WriteLine(exception);
                     try { transaction?.Rollback(); }
                     catch (Exception rolbackException)
                     {
@@ -327,7 +341,7 @@ namespace StudentManager
 
 
 
-            private bool SetStudentFromQuery(string query, Student setModules = null)
+            private bool SetOrAddStudentFromQuery(string query, Student setModules = null)
             {
                 SqlTransaction transaction = null;
                 try
@@ -335,13 +349,13 @@ namespace StudentManager
                     transaction = connection.BeginTransaction("SetStudent");
                     int rowsAffected = new SqlCommand(query, connection).ExecuteNonQuery();
                     if (rowsAffected != 1) throw new IndexOutOfRangeException($"{rowsAffected} rows affected in SetStudent operation");
-                    if (setModules == null || SetStudentModules(setModules))
+                    if (setModules == null || SetOrAddStudentModules(setModules))
                         return true;
                     else throw new Exception("Failed to set Student's Modules");
                 }
                 catch (Exception exception)
                 {
-                    Console.WriteLine(exception.Message);
+                    Console.WriteLine(exception);
                     try { transaction?.Rollback(); }
                     catch (Exception rolbackException)
                     {
@@ -351,7 +365,7 @@ namespace StudentManager
                 }
             }
 
-            private bool SetStudentModules(Student student)
+            private bool SetOrAddStudentModules(Student student)
             {
                 SqlTransaction transaction = null;
                 try
@@ -372,7 +386,7 @@ namespace StudentManager
                 }
                 catch (Exception exception)
                 {
-                    Console.WriteLine(exception.Message);
+                    Console.WriteLine(exception);
                     try { transaction?.Rollback(); }
                     catch (Exception rolbackException)
                     {
@@ -382,15 +396,16 @@ namespace StudentManager
                 }
             }
 
-            public bool SetStudent(Student student)
+            public bool SetOrAddStudent(Student student)
             {
                 var existingModules = GetStudents($"{nameof(Student.Student_Number)} = {ToSQLString(student.Student_Number)}");
                 if (existingModules == null || existingModules.Count == 0)
-                    return SetStudentFromQuery(
+                    return SetOrAddStudentFromQuery(
                         $"INSERT INTO Student ({GetStudentAttributesString()}) VALUES (" +
                         $"{ToSQLString(student.Student_Number)}," +
                         $"{ToSQLString(student.Student_Name_and_Surname)}," +
-                        $"{ToSQLString(student.DOB.ToString("yyyy-MM-dd"))}," +
+                        $"{ToSQLString(student.Student_Image)}," +
+                        $"{ToSQLString(student.DOB)}," +
                         $"{ToSQLString(student.Gender)}," +
                         $"{ToSQLString(student.Phone)}," +
                         $"{ToSQLString(student.Address)} " +
@@ -398,10 +413,11 @@ namespace StudentManager
                         student
                         );
                 else if (existingModules.Count == 1)
-                    return SetStudentFromQuery(
+                    return SetOrAddStudentFromQuery(
                         $"UPDATE Student SET " +
                         $"{nameof(Student.Student_Name_and_Surname)} = {ToSQLString(student.Student_Name_and_Surname)}," +
-                        $"{nameof(Student.DOB)} = {ToSQLString(student.DOB.ToString("yyyy-MM-dd"))}," +
+                        $"{nameof(Student.Student_Image)} = {ToSQLString(student.Student_Image)}," +
+                        $"{nameof(Student.DOB)} = {ToSQLString(student.DOB)}," +
                         $"{nameof(Student.Gender)} = {ToSQLString(student.Gender)}," +
                         $"{nameof(Student.Phone)} = {ToSQLString(student.Phone)}," +
                         $"{nameof(Student.Address)} = {ToSQLString(student.Address)} " +
@@ -429,7 +445,7 @@ namespace StudentManager
                 }
                 catch (Exception exception)
                 {
-                    Console.WriteLine(exception.Message);
+                    Console.WriteLine(exception);
                     try { transaction?.Rollback(); }
                     catch (Exception rolbackException)
                     {
