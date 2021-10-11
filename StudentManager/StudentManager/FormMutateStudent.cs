@@ -52,6 +52,7 @@ namespace StudentManager
             textBoxStudentPhone.Text = ProgramInfo.selectedStudent?.Phone;
             textBoxStudentAddress.Text = ProgramInfo.selectedStudent?.Address;
 
+            dataGridViewModuleCodes.Rows.Clear();
             if (ProgramInfo.selectedStudent?.Modules != null)
                 foreach (var module in ProgramInfo.selectedStudent.Modules)
                     dataGridViewModuleCodes.Rows.Add(module.Module_Code, module.Module_Name, module.Module_Description);
@@ -89,11 +90,14 @@ namespace StudentManager
 
         private List<Module> GetModulesFromGrid()
         {
-            return (from DataGridViewRow row in dataGridViewModuleCodes.Rows
-                    select ProgramInfo.studentAndModuleData.modules.Find(
-                        module => module.Module_Code == row.Cells[0].Value?.ToString()
-                        )
-                    ).ToList();
+            var result =
+                (from DataGridViewRow row in dataGridViewModuleCodes.Rows
+                select ProgramInfo.studentAndModuleData.modules.Find(
+                    module => module.Module_Code == row.Cells[0].Value?.ToString()
+                    )
+                ).ToList();
+            result.RemoveAll(module => module == null);
+            return result;
         }
 
         private Student GetStudentFromFields()
@@ -194,10 +198,15 @@ namespace StudentManager
             }
         }
 
-        private void comboBox1_TextUpdate(object sender, EventArgs e)
+        private void ComboBox1_TextUpdate(object sender, EventArgs e)
         {
             var selectedModule = ProgramInfo.studentAndModuleData.modules.Find(module => module.Module_Code == comboBox1.Text);
-            button3.Enabled = (selectedModule != null && GetModulesFromGrid()?.Find(module => module?.Module_Code == selectedModule.Module_Code) == null);
+            button3.Enabled = (selectedModule != null && GetModulesFromGrid()?.Find(module => module?.Module_Code == selectedModule?.Module_Code) == null);
+        }
+
+        private void ComboBox1_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            ComboBox1_TextUpdate(null, null);
         }
     }
 }

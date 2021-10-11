@@ -12,7 +12,11 @@ namespace StudentManager
 {
     public static class DataAccess
     {
-        private static readonly string DatabaseConnectionString = "Data Source=(local); Initial Catalog = BCStudents;";
+        private static string DatabaseConnectionString = "Data Source=(local);Initial Catalog=BCStudents;Integrated Security=true;Pooling=false;";
+        public class DatabaseConnectionOperationException : Exception
+        {
+            public DatabaseConnectionOperationException(string message = "Database Connection Operation Exception") : base(message) { }
+        }
 
         public class DatabaseConnection
         {
@@ -26,16 +30,25 @@ namespace StudentManager
 
             private static string ToSQLString(DateTime cDate)
             {
-                return $"\'{cDate:yyyy/MM/dd}\'";
+                return $"\'{cDate:yyyy-MM-dd}\'";
             }
 
             private readonly SqlConnection connection = new SqlConnection(DatabaseConnectionString);
             public DatabaseConnection() 
             {
                 try { connection.Open(); }
+                catch (Exception exception) 
+                { 
+                    Console.WriteLine(exception); 
+                    Console.WriteLine("Please Enter a valid connection string : ");
+                    DatabaseConnectionString = Console.ReadLine();
+                }
+            }
+            ~DatabaseConnection()
+            {
+                try { connection.Close(); }
                 catch (Exception exception) { Console.WriteLine(exception); }
             }
-            ~DatabaseConnection() { connection.Close(); }
 
             /*
              * Database Get Commands
@@ -46,11 +59,13 @@ namespace StudentManager
                 var modules = GetModules();
                 var students = GetStudents();
 
+                modules.RemoveAll(module => module == null);
                 if (students != null && modules != null)
                     foreach (var student in students) // merge copies
-                        student.Modules = (from Module sModule in student.Modules
-                                           select modules.Find(module=>module.Module_Code == sModule.Module_Code)
-                                           ).ToList();
+                    {
+                        student.Modules = student.Modules?.Select(sModule => modules.Find(module => module.Module_Code == sModule.Module_Code)).ToList();
+                        student.Modules.RemoveAll(module => module == null);
+                    }
 
                 return new StudentAndModuleData() { modules = modules, students = students };
             }
@@ -71,26 +86,31 @@ namespace StudentManager
                 {
                     transaction = connection.BeginTransaction("GetModule");
                     List<Module> modules = new List<Module>();
-                    SqlDataReader reader = new SqlCommand(query, connection).ExecuteReader();
+                    SqlCommand command = new SqlCommand(query, connection, transaction);
+                    SqlDataReader reader = command.ExecuteReader();
                     while (reader.Read())
                     {
-                        Module newModule = new Module()
+                        modules.Add(new Module()
                         {
                             Module_Code = $"{reader[nameof(Module.Module_Code)]}",
                             Module_Name = $"{reader[nameof(Module.Module_Name)]}",
                             Module_Description = $"{reader[nameof(Module.Module_Description)]}",
                             Online_Resources = new List<string>()
-                        };
-
+                        });
+                    }
+                    reader.Close();
+                    modules.ForEach(module=>
+                    {
                         SqlCommand ModuleResourcesCommand = new SqlCommand(
-                            $"SELECT ResourceURL FROM ModuleOnlineResource WHERE {nameof(Module.Module_Code)} = {ToSQLString(newModule.Module_Code)}",
-                            connection);
+                            $"SELECT ResourceURL FROM ModuleOnlineResource WHERE {nameof(Module.Module_Code)} = {ToSQLString(module.Module_Code)};",
+                            connection, transaction);
                         SqlDataReader ModuleResourcesReader = ModuleResourcesCommand.ExecuteReader();
                         while (ModuleResourcesReader.Read())
-                            newModule.Online_Resources.Add($"{ModuleResourcesReader["ResourceURL"]}");
-
-                        modules.Add(newModule);
-                    }
+                            module.Online_Resources.Add($"{ModuleResourcesReader["ResourceURL"]}");
+                        ModuleResourcesReader.Close();
+                    });
+                    transaction.Commit();
+                    modules.RemoveAll(module => module == null);
                     return modules;
                 }
                 catch (Exception exception)
@@ -101,13 +121,15 @@ namespace StudentManager
                     {
                         Console.WriteLine(rolbackException.Message);
                     }
+                    Console.WriteLine($"query that generated exception : {query}");
                     return null;
                 }
             }
 
             public List<Module> GetModules(string whereParam = "TRUE")
             {
-                return GetModulesFromQuery($"SELECT {GetModuleAttributesString()} FROM Module WHERE {whereParam}");
+                string WHERE = whereParam == "TRUE" ? "" : $"WHERE {whereParam}";
+                return GetModulesFromQuery($"SELECT {GetModuleAttributesString()} FROM Module {WHERE};");
             }
 
             private List<Module> GetModulesWithStudents(string whereParam)
@@ -115,8 +137,8 @@ namespace StudentManager
                 return GetModulesFromQuery(
                     $"SELECT {GetModuleAttributesString("M")},SM.{nameof(Student.Student_Number)} " +
                     $"FROM Module M JOIN StudentModule SM " +
-                    $"ON M.Moldule_Code = SM.Module_Code " +
-                    $"WHERE {whereParam}"
+                    $"ON M.{nameof(Module.Module_Code)} = SM.{nameof(Module.Module_Code)} " +
+                    $"WHERE {whereParam};"
                 );
             }
 
@@ -125,7 +147,7 @@ namespace StudentManager
                 string whereParam = "";
                 foreach (var studentNumber in studentsNumbers)
                     whereParam += $"SM.{nameof(Student.Student_Number)} = {ToSQLString(studentNumber)} or ";
-                whereParam.Remove(whereParam.Length - " or ".Length, " or ".Length);
+                whereParam = whereParam.Remove(whereParam.Length - " or ".Length, " or ".Length);
                 return GetModulesWithStudents(whereParam);
             }
 
@@ -156,13 +178,15 @@ namespace StudentManager
 
             private List<Student> GetStudentsFromQuery(string query)
             {
+                SqlTransaction transaction = null;
                 try
                 {
-                    SqlDataReader reader = new SqlCommand(query, connection).ExecuteReader();
+                    transaction = connection.BeginTransaction("GetStudent");
+                    SqlCommand command = new SqlCommand(query, connection, transaction);
+                    SqlDataReader reader = command.ExecuteReader();
                     List<Student> students = new List<Student>();
                     while (reader.Read())
-                    {
-                        Student newStudent = new Student()
+                        students.Add(new Student()
                         {
                             Student_Number = $"{reader[nameof(Student.Student_Number)]}",
                             Student_Name_and_Surname = $"{reader[nameof(Student.Student_Name_and_Surname)]}",
@@ -172,31 +196,37 @@ namespace StudentManager
                             Phone = $"{reader[nameof(Student.Phone)]}",
                             Address = $"{reader[nameof(Student.Address)]}",
                             Modules = new List<Module>()
-                        };
-                        newStudent.Modules = GetModulesWithStudent(newStudent);
-                        students.Add(newStudent);
-                    }
+                        });
+                    reader.Close();
+                    transaction.Commit();
+                    students.ForEach(student => student.Modules = GetModulesWithStudent(student));
                     return students;
                 }
                 catch (Exception exception)
                 {
                     Console.WriteLine(exception);
+                    try { transaction?.Rollback(); }
+                    catch (Exception rolbackException)
+                    {
+                        Console.WriteLine(rolbackException.Message);
+                    }
+                    Console.WriteLine($"query that generated exception : {query}");
                     return null;
                 }
             }
             
-            public List<Student> GetStudents(string whereParam = "TRUE")
+            public List<Student> GetStudents(string whereParam = null)
             {
-                return GetStudentsFromQuery($"SELECT {GetStudentAttributesString()} FROM Student WHERE {whereParam}");
+                return GetStudentsFromQuery($"SELECT {GetStudentAttributesString()} FROM Student {(whereParam == null ? "" : $"WHERE {whereParam}")};");
             }
 
             private List<Student> GetStudentsWithModules(string whereParam)
             {
                 return GetStudentsFromQuery(
                         $"SELECT {GetStudentAttributesString("S")}, SM.{nameof(Module.Module_Code)} " +
-                        "FROM Student S JOIN StudentModule SM " +
-                        "ON S.Student_Number = SM.Student_Number " +
-                        $"WHERE {whereParam}"
+                        $"FROM Student S JOIN StudentModule SM " +
+                        $"ON S.{nameof(Student.Student_Number)} = SM.{nameof(Student.Student_Number)} " +
+                        $" {(whereParam == null ? "" : $"WHERE {whereParam}")};"
                         );
             }
 
@@ -205,7 +235,7 @@ namespace StudentManager
                 string whereParam = "";
                 foreach (var moduleCode in moduleCodes)
                     whereParam += $"SM.{nameof(Module.Module_Code)} = {ToSQLString(moduleCode)} or ";
-                whereParam.Remove(whereParam.Length - " or ".Length, " or ".Length);
+                whereParam = whereParam.Remove(whereParam.Length - " or ".Length, " or ".Length);
                 return GetStudentsWithModules(whereParam);
             }
 
@@ -231,11 +261,15 @@ namespace StudentManager
                 try
                 {
                     transaction = connection.BeginTransaction("SetModule");
-                    int rowsAffected = new SqlCommand(query, connection).ExecuteNonQuery();
-                    if (rowsAffected != 1) throw new IndexOutOfRangeException($"{rowsAffected} rows affected in SetModule operation");
-                    if (Online_Resources == null || SetModuleOnlineResource(Online_Resources))
+                    int rowsAffected = new SqlCommand(query, connection, transaction).ExecuteNonQuery();
+                    if (rowsAffected == 1)
+                    {
+                        transaction.Commit();
+                        if (!(Online_Resources == null || SetModuleOnlineResource(Online_Resources)))
+                            throw new DatabaseConnectionOperationException("Failed to set Online Resources");
                         return true;
-                    else throw new Exception("Failed to set Online Resources");
+                    }
+                    else throw new IndexOutOfRangeException($"{rowsAffected} rows affected in SetModule operation");
                 }
                 catch (Exception exception)
                 {
@@ -245,6 +279,7 @@ namespace StudentManager
                     {
                         Console.WriteLine(rolbackException.Message);
                     }
+                    Console.WriteLine($"query that generated exception : {query}");
                     return false;
                 }
             }
@@ -264,16 +299,18 @@ namespace StudentManager
                     transaction = connection.BeginTransaction("SetModule");
                     int rowsAffected = new SqlCommand(
                         $"DELETE FROM ModuleOnlineResource WHERE {nameof(Module.Module_Code)} = {ToSQLString(module.Module_Code)}",
-                        connection).ExecuteNonQuery();
-                    foreach (string Online_Resourse in module.Online_Resources)
-                    {
-                        rowsAffected = new SqlCommand(
-                            $"INSERT INTO ModuleOnlineResource" +
-                            $"({nameof(module.Module_Code)}, {nameof(Online_Resourse)}) VALUES" +
-                            $"({ToSQLString(module.Module_Code)}, {ToSQLString(Online_Resourse)})",
-                            connection).ExecuteNonQuery();
-                        if (rowsAffected != 1) throw new IndexOutOfRangeException($"Failed SetModuleOnlineResource operation");
-                    }
+                        connection, transaction).ExecuteNonQuery();
+                    foreach (string ResourceURL in module.Online_Resources)
+                        if (ResourceURL != null && ResourceURL.Length > 0)
+                        {
+                            rowsAffected = new SqlCommand(
+                                $"INSERT INTO ModuleOnlineResource" +
+                                $"({nameof(module.Module_Code)}, {nameof(ResourceURL)}) VALUES" +
+                                $"({ToSQLString(module.Module_Code)}, {ToSQLString(ResourceURL)})",
+                                connection, transaction).ExecuteNonQuery();
+                            if (rowsAffected != 1) throw new DatabaseConnectionOperationException($"Failed SetModuleOnlineResource operation");
+                        }
+                    transaction.Commit();
                     return true;
                 }
                 catch (Exception exception)
@@ -309,7 +346,7 @@ namespace StudentManager
                         module
                         );
                 else
-                    throw new Exception("Database had duplicate primary keys in table Module");
+                    throw new DatabaseConnectionOperationException("Database had duplicate primary keys in table Module");
             }
 
             public bool RemoveModule(Module module)
@@ -320,11 +357,12 @@ namespace StudentManager
                     transaction = connection.BeginTransaction("RemoveModule");
                     int rowsAffected = new SqlCommand(
                         $"DELETE FROM ModuleOnlineResource WHERE {nameof(Module.Module_Code)} = {ToSQLString(module.Module_Code)}",
-                        connection).ExecuteNonQuery();
+                        connection, transaction).ExecuteNonQuery();
                     rowsAffected = new SqlCommand(
                         $"DELETE FROM Module WHERE {nameof(Module.Module_Code)} = {ToSQLString(module.Module_Code)}",
-                        connection).ExecuteNonQuery();
-                    if (rowsAffected != 1) throw new IndexOutOfRangeException($"Failed RemoveModule operation");
+                        connection, transaction).ExecuteNonQuery();
+                    if (rowsAffected != 1) throw new DatabaseConnectionOperationException($"Failed RemoveModule operation");
+                    transaction.Commit();
                     return true;
                 }
                 catch (Exception exception)
@@ -347,11 +385,17 @@ namespace StudentManager
                 try
                 {
                     transaction = connection.BeginTransaction("SetStudent");
-                    int rowsAffected = new SqlCommand(query, connection).ExecuteNonQuery();
-                    if (rowsAffected != 1) throw new IndexOutOfRangeException($"{rowsAffected} rows affected in SetStudent operation");
-                    if (setModules == null || SetOrAddStudentModules(setModules))
-                        return true;
-                    else throw new Exception("Failed to set Student's Modules");
+                    int rowsAffected = new SqlCommand(query, connection, transaction).ExecuteNonQuery();
+                    if (rowsAffected == 1)
+                    {
+                        transaction.Commit();
+                        if (setModules == null || SetOrAddStudentModules(setModules))
+                            return true;
+                        else 
+                            throw new DatabaseConnectionOperationException("Failed to set Student's Modules");
+                    }
+                    else
+                        throw new IndexOutOfRangeException($"{rowsAffected} rows affected in SetStudent operation");
                 }
                 catch (Exception exception)
                 {
@@ -361,6 +405,7 @@ namespace StudentManager
                     {
                         Console.WriteLine(rolbackException.Message);
                     }
+                    Console.WriteLine($"query that generated exception : {query}");
                     return false;
                 }
             }
@@ -368,20 +413,24 @@ namespace StudentManager
             private bool SetOrAddStudentModules(Student student)
             {
                 SqlTransaction transaction = null;
+                string query = "";
                 try
                 {
                     transaction = connection.BeginTransaction("SetStudentModules");
-                    int rowsAffected = new SqlCommand(
+                    int rowsAffected = new SqlCommand(query =
                         $"DELETE FROM StudentModule WHERE {nameof(Student.Student_Number)} = {ToSQLString(student.Student_Number)}",
-                        connection).ExecuteNonQuery();
+                        connection, transaction).ExecuteNonQuery();
                     foreach (var module in student.Modules)
-                    {
-                        rowsAffected = new SqlCommand(
-                            $"INSERT INTO StudentModule ({nameof(Student.Student_Number)}, {nameof(Module.Module_Code)}) " +
-                            $"VALUES ({student.Student_Number}, {module.Module_Code})",
-                            connection).ExecuteNonQuery();
-                        if (rowsAffected != 1) throw new IndexOutOfRangeException($"failed to add module {module.Module_Code}");
-                    }
+                        if (module != null)
+                        {
+                            rowsAffected = new SqlCommand(query =
+                                $"INSERT INTO StudentModule ({nameof(Student.Student_Number)}, {nameof(Module.Module_Code)}) " +
+                                $"VALUES ({ToSQLString(student.Student_Number)}, {ToSQLString(module.Module_Code)})",
+                                connection, transaction).ExecuteNonQuery();
+                            if (rowsAffected != 1)
+                                throw new IndexOutOfRangeException($"failed to add module {module.Module_Code}");
+                        }
+                    transaction.Commit();
                     return true;
                 }
                 catch (Exception exception)
@@ -392,6 +441,7 @@ namespace StudentManager
                     {
                         Console.WriteLine(rolbackException.Message);
                     }
+                    Console.WriteLine($"query that generated exception : {query}");
                     return false;
                 }
             }
@@ -425,7 +475,7 @@ namespace StudentManager
                         student
                         );
                 else 
-                    throw new IndexOutOfRangeException("duplicate Student_Numbers returned by database");
+                    throw new DatabaseConnectionOperationException("duplicate Student_Numbers returned by database");
             }
 
             public bool RemoveStudent(Student student)
@@ -436,11 +486,13 @@ namespace StudentManager
                     transaction = connection.BeginTransaction("RemoveStudent");
                     int rowsAffected = new SqlCommand(
                         $"DELETE FROM StudentModule WHERE {nameof(Student.Student_Number)} = {ToSQLString(student.Student_Number)}",
-                        connection).ExecuteNonQuery();
+                        connection, transaction).ExecuteNonQuery();
                     rowsAffected = new SqlCommand(
                         $"DELETE FROM Student WHERE {nameof(Student.Student_Number)} = {ToSQLString(student.Student_Number)}",
-                        connection).ExecuteNonQuery();
-                    if (rowsAffected != 1) throw new IndexOutOfRangeException($"Failed RemoveStudent operation");
+                        connection, transaction).ExecuteNonQuery();
+                    if (rowsAffected != 1) 
+                        throw new IndexOutOfRangeException($"Failed RemoveStudent operation");
+                    transaction.Commit();
                     return true;
                 }
                 catch (Exception exception)

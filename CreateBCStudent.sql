@@ -25,7 +25,7 @@ create table StudentModule (
 
 create table ModuleOnlineResource (
 	Module_Code varchar(255) foreign key references Module(Module_Code),
-	ResourceURL varchar(1023),
+	ResourceURL varchar(511),
 	primary key (Module_Code, ResourceURL)
 );
 
